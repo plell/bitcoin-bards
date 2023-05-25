@@ -3,23 +3,21 @@ import { useKeyboardControls } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { Mesh} from 'three'
 
-const step = 0.2
+const step = 0.1
 
 export const Player = () => {
     const ref = useRef<Mesh|null>(null)
     const [subscribeKeys, getKeys] = useKeyboardControls()
 
     useEffect(() => {
-        
-        const unsubscribeAny = subscribeKeys(
+        const unsubscribeUp = subscribeKeys(
             (state) => state.up,
             () => {
                 console.log('up')  
             })
         
         return () => {
-        
-            unsubscribeAny()
+            unsubscribeUp()
         }   
     }, [])
 
@@ -45,7 +43,8 @@ export const Player = () => {
                 _y -= step
             }
 
-            ref.current.position.set(ref.current.position.x+_x, ref.current.position.y+_y, ref.current.position.z+_z)
+            const {x,y,z} = ref.current.position
+            ref.current.position.set(x+_x, y+_y, z+_z)
         }
        
     })
