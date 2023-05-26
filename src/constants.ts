@@ -16,3 +16,11 @@ export const controls = [
         keys: ['ArrowRight', 'KeyD']
     }
 ]
+
+export const grid = {
+    x: 0,
+    y: 0,
+    z: -1,
+    width: 30,
+    height: 20
+}

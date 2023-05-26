@@ -1,2 +1,4 @@
-export type PlayerPosition = number[]
-export type PlayerPositions = Record<string, number[]>
+import { Vector3 } from "three"
+
+export type PlayerPosition = Vector3
+export type PlayerPositions = Record<string, Vector3>

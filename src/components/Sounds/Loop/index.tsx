@@ -37,7 +37,7 @@ export const Loop = () => {
     ref.current.position.x += step;
 
     // for the player
-    if (!played && playerPosition[0] < ref.current.position.x) {
+    if (!played && playerPosition.x < ref.current.position.x) {
       playSound();
       setPlayed(true);
     }
@@ -48,7 +48,7 @@ export const Loop = () => {
 
       if (
         !playedList?.includes(playerId) &&
-        pp[0] < (ref?.current?.position.x || 0)
+        pp.x < (ref?.current?.position.x || 0)
       ) {
         playSound();
         setPlayedList([...playedList, playerId]);

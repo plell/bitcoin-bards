@@ -7,6 +7,8 @@ import { Terrain } from "./components/Terrain";
 import { KeyboardControls } from "@react-three/drei";
 import { controls } from "./constants";
 import { Loop } from "./components/Sounds/Loop";
+import { Enemy } from "./components/Enemy";
+import { Physics } from "@react-three/rapier";
 
 function App() {
   return (
@@ -20,11 +22,14 @@ function App() {
         }}
       >
         <Perf position='top-left' />
-
-        <Player />
         <Lights />
         <Loop />
         <Terrain />
+
+        <Physics gravity={[0, 0, 0]}>
+          <Player />
+          <Enemy />
+        </Physics>
       </Canvas>
     </KeyboardControls>
   );

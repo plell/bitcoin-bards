@@ -2,9 +2,12 @@ import AppContext from "../hooks/createContext";
 import { useEffect, useRef, useContext } from "react";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { Mesh } from "three";
+import { Mesh, Vector3 } from "three";
+import { RigidBody } from "@react-three/rapier";
 
 const step = 0.1;
+
+const variableVector3 = new Vector3();
 
 export const Player = () => {
   const {
@@ -49,16 +52,18 @@ export const Player = () => {
       }
 
       const { x, y, z } = ref.current.position;
-      const newPosition = [x + _x, y + _y, z + _z];
-      ref.current.position.set(newPosition[0], newPosition[1], newPosition[2]);
+      const newPosition = variableVector3.set(x + _x, y + _y, z + _z);
+      ref.current.position.set(newPosition.x, newPosition.y, newPosition.z);
       setPlayerPosition(newPosition);
     }
   });
 
   return (
-    <mesh ref={ref}>
-      <boxGeometry />
-      <meshStandardMaterial />
-    </mesh>
+    <RigidBody type={"kinematicVelocity"}>
+      <mesh ref={ref}>
+        <boxGeometry />
+        <meshStandardMaterial />
+      </mesh>
+    </RigidBody>
   );
 };

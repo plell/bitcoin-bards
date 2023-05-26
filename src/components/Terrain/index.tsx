@@ -1,11 +1,12 @@
-
-
+import { grid } from "../../constants";
 
 export const Terrain = () => {
-    return <>
-        <mesh position={[0, 20, -1]} rotation-z={ Math.PI}> 
-            <planeGeometry args={[40,300]} />
-            <meshStandardMaterial color={'tomato'}/>
-            </mesh>
+  return (
+    <>
+      <mesh position={[grid.x, grid.y, grid.z]} rotation-z={Math.PI}>
+        <planeGeometry args={[grid.width, grid.height]} />
+        <meshStandardMaterial color={"tomato"} />
+      </mesh>
     </>
-}
+  );
+};
