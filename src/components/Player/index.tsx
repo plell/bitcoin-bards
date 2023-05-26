@@ -1,56 +1,64 @@
-import { useEffect,useRef} from 'react'
-import { useKeyboardControls } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
-import { Mesh} from 'three'
+import AppContext from "../hooks/createContext";
+import { useEffect, useRef, useContext } from "react";
+import { useKeyboardControls } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { Mesh } from "three";
 
-const step = 0.1
+const step = 0.1;
 
 export const Player = () => {
-    const ref = useRef<Mesh|null>(null)
-    const [subscribeKeys, getKeys] = useKeyboardControls()
+  const {
+    playerPosition: [, setPlayerPosition],
+  } = useContext(AppContext)!;
 
-    useEffect(() => {
-        const unsubscribeUp = subscribeKeys(
-            (state) => state.up,
-            () => {
-                console.log('up')  
-            })
-        
-        return () => {
-            unsubscribeUp()
-        }   
-    }, [])
+  const ref = useRef<Mesh | null>(null);
+  const [subscribeKeys, getKeys] = useKeyboardControls();
 
-    
-    useFrame(() => {
-        if (ref.current) {
-            const { left, right, up, down } = getKeys()
+  useEffect(() => {
+    const unsubscribeUp = subscribeKeys(
+      (state) => state.up,
+      () => {
+        console.log("up");
+      }
+    );
 
-            let _x = 0
-            let _y = 0
-            let _z = 0
+    return () => {
+      unsubscribeUp();
+    };
+  }, []);
 
-            if (left) {
-                _x -= step
-            }
-            if (right) {
-                _x += step
-            }
-            if (up) {
-                _y += step
-            }
-            if (down) {
-                _y -= step
-            }
+  useFrame(() => {
+    if (ref.current) {
+      const { left, right, up, down } = getKeys();
 
-            const {x,y,z} = ref.current.position
-            ref.current.position.set(x+_x, y+_y, z+_z)
-        }
-       
-    })
+      let _x = 0;
+      let _y = 0;
+      let _z = 0;
 
-    return <mesh ref={ref}>
-            <boxGeometry />
-            <meshStandardMaterial/>
-        </mesh>
-}
+      if (left) {
+        _x -= step;
+      }
+      if (right) {
+        _x += step;
+      }
+      if (up) {
+        _y += step;
+      }
+      if (down) {
+        _y -= step;
+      }
+
+      const { x, y, z } = ref.current.position;
+      const newPosition = [x + _x, y + _y, z + _z];
+      ref.current.position.set(newPosition[0], newPosition[1], newPosition[2]);
+      setPlayerPosition(newPosition);
+    }
+  });
+
+  return (
+    <mesh ref={ref}>
+      <boxGeometry />
+      <meshStandardMaterial />
+    </mesh>
+  );
+};
