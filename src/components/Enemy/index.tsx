@@ -4,13 +4,26 @@ import { Vector3 } from "three";
 import AppContext from "../hooks/createContext";
 import { RigidBody } from "@react-three/rapier";
 
-let enemyTurnTimeout: ReturnType<typeof setTimeout> | null = null;
+type EnemyProps = {
+  startPosition: Vector3;
+  movementInterval: number;
+  speed: number;
+};
 
-export const Enemy = () => {
+type Timeout = ReturnType<typeof setTimeout>;
+
+export const Enemy = ({
+  startPosition,
+  movementInterval,
+  speed,
+}: EnemyProps) => {
   const {
     playerPosition: [playerPosition],
   } = useContext(AppContext)!;
 
+  const [enemyTurnTimeout, setEnemyTurnTimeout] = useState<Timeout | null>(
+    null
+  );
   const enemyRef = useRef<THREE.Mesh>(null);
   const [destination, setDestination] = useState<Vector3>(new Vector3(0, 0, 0));
 
@@ -25,23 +38,25 @@ export const Enemy = () => {
   }, [playerPosition]);
 
   const updateDestination = () => {
-    enemyTurnTimeout = setTimeout(() => {
-      console.log("updateDestination");
-      setDestination(playerPosition.clone());
+    setDestination(playerPosition.clone());
+
+    const nextMoveTimeout = setTimeout(() => {
       updateDestination();
-    }, 1600);
+    }, movementInterval);
+
+    setEnemyTurnTimeout(nextMoveTimeout);
   };
 
   useFrame(() => {
     if (enemyRef.current) {
-      enemyRef.current.position.lerp(destination, 0.04);
+      enemyRef.current.position.lerp(destination, speed * 0.01);
     }
   });
 
   return (
     <RigidBody type={"kinematicVelocity"}>
-      <mesh ref={enemyRef}>
-        <boxBufferGeometry args={[1, 1, 1]} />
+      <mesh ref={enemyRef} position={startPosition}>
+        <boxGeometry args={[1, 1, 1]} />
         <meshBasicMaterial color='red' />
       </mesh>
     </RigidBody>

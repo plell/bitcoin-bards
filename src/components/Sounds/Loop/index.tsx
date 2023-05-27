@@ -58,7 +58,7 @@ export const Loop = () => {
 
   return (
     <mesh ref={ref}>
-      <boxGeometry args={[1, 300, 1]} />
+      <boxGeometry args={[1, 30, 1]} />
       <meshStandardMaterial />
     </mesh>
   );

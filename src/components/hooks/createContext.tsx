@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { PlayerPositions, PlayerPosition } from "../../types";
+import { PlayerPositions, PlayerPosition, Zone } from "../../types";
 
 interface contextProps {
   playerPosition: [
@@ -10,6 +10,7 @@ interface contextProps {
     playerPositions: PlayerPositions,
     setPlayerPositions: (e: PlayerPositions) => void
   ];
+  zones: [zones: Zone[], setZones: (e: Zone[]) => void];
 }
 
 const AppContext = createContext<contextProps | null>(null);

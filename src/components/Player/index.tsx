@@ -4,6 +4,7 @@ import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { Mesh, Vector3 } from "three";
 import { RigidBody } from "@react-three/rapier";
+import { HealthBar } from "../UI/HealthBar";
 
 const step = 0.1;
 
@@ -59,11 +60,17 @@ export const Player = () => {
   });
 
   return (
-    <RigidBody type={"kinematicVelocity"}>
-      <mesh ref={ref}>
-        <boxGeometry />
-        <meshStandardMaterial />
-      </mesh>
-    </RigidBody>
+    <>
+      <HealthBar
+        health={50}
+        position={ref?.current?.position || new Vector3()}
+      />
+      <RigidBody type={"kinematicVelocity"}>
+        <mesh ref={ref}>
+          <boxGeometry />
+          <meshStandardMaterial />
+        </mesh>
+      </RigidBody>
+    </>
   );
 };
