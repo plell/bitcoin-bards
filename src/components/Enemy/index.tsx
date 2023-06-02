@@ -1,8 +1,10 @@
-import { useEffect, useContext, useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
-import { Vector3 } from "three";
-import AppContext from "../hooks/createContext";
-import { RigidBody } from "@react-three/rapier";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { Mesh, Vector3 } from "three";
+
+import { RigidBody, RapierRigidBody } from "@react-three/rapier";
+import { MOVEMENT_DAMPING } from "../../constants";
+import HealthBar from "../UI/HealthBar";
+import useGame from "../../Stores/useGame";
 
 type EnemyProps = {
   startPosition: Vector3;
@@ -17,49 +19,92 @@ export const Enemy = ({
   movementInterval,
   speed,
 }: EnemyProps) => {
-  const {
-    playerPosition: [playerPosition],
-  } = useContext(AppContext)!;
+  const playerPositions = useGame((s) => s.playerPositions);
 
-  const [enemyTurnTimeout, setEnemyTurnTimeout] = useState<Timeout | null>(
-    null
+  let timeout: Timeout = useMemo(
+    () =>
+      setTimeout(() => {
+        updateDestination();
+      }, movementInterval),
+    []
   );
-  const enemyRef = useRef<THREE.Mesh>(null);
-  const [destination, setDestination] = useState<Vector3>(new Vector3(0, 0, 0));
+
+  const body = useRef<RapierRigidBody | null>(null);
+
+  const [destination, setDestination] = useState<Vector3>(
+    new Vector3(
+      playerPositions["me"]?.x || 0,
+      playerPositions["me"]?.y || 0,
+      playerPositions["me"]?.z || 0
+    )
+  );
 
   useEffect(() => {
-    updateDestination();
-
-    return () => {
-      if (enemyTurnTimeout) {
-        clearTimeout(enemyTurnTimeout);
+    return function () {
+      if (timeout) {
+        clearTimeout(timeout);
       }
     };
-  }, [playerPosition]);
+  }, []);
 
-  const updateDestination = () => {
-    setDestination(playerPosition.clone());
-
-    const nextMoveTimeout = setTimeout(() => {
+  const updateDestination = useCallback(() => {
+    const closestPlayer = playerPositions["me"] || new Vector3();
+    setDestination(closestPlayer.clone());
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
       updateDestination();
     }, movementInterval);
+  }, [playerPositions]);
 
-    setEnemyTurnTimeout(nextMoveTimeout);
+  useEffect(() => {
+    applyForce();
+  }, [destination]);
+
+  const applyForce = () => {
+    if (body.current) {
+      const currentPosition = body.current.translation();
+      const impulse = { x: 0, y: 0, z: 0 };
+
+      if (destination.x < currentPosition.x) {
+        impulse.x -= speed;
+      }
+      if (destination.x > currentPosition.x) {
+        impulse.x += speed;
+      }
+      if (destination.y < currentPosition.y) {
+        impulse.y -= speed;
+      }
+      if (destination.y > currentPosition.y) {
+        impulse.y += speed;
+      }
+
+      body.current.applyImpulse(impulse, true);
+    }
   };
 
-  useFrame(() => {
-    if (enemyRef.current) {
-      enemyRef.current.position.lerp(destination, speed * 0.01);
-    }
-  });
-
   return (
-    <RigidBody type={"kinematicVelocity"}>
-      <mesh ref={enemyRef} position={startPosition}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial color='red' />
-      </mesh>
-    </RigidBody>
+    <>
+      <HealthBar health={80} bodyRef={body} />
+      <RigidBody
+        ref={body}
+        restitution={0.2}
+        friction={1}
+        onWake={() => {
+          console.log("wake!");
+        }}
+        position={startPosition}
+        canSleep={false}
+        lockRotations
+        colliders='ball'
+        linearDamping={MOVEMENT_DAMPING}
+        angularDamping={MOVEMENT_DAMPING}
+      >
+        <mesh>
+          <sphereGeometry />
+          <meshBasicMaterial color='red' />
+        </mesh>
+      </RigidBody>
+    </>
   );
 };
 

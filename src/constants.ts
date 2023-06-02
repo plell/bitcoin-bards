@@ -23,8 +23,8 @@ export const grid = {
     x: 0,
     y: 0,
     z: -1,
-    width: 30,
-    height: 20
+    width: 60,
+    height: 50
 }
 
 const zoneWidth = grid.width / 4
@@ -65,3 +65,4 @@ export const initialZones = [
       },
   ]
 
+export const MOVEMENT_DAMPING = 5

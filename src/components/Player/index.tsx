@@ -1,21 +1,21 @@
-import AppContext from "../hooks/createContext";
-import { useEffect, useRef, useContext } from "react";
+import { useEffect, useRef } from "react";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { Mesh, Vector3 } from "three";
-import { RigidBody } from "@react-three/rapier";
+import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
+import { MOVEMENT_DAMPING } from "../../constants";
+import useGame from "../../Stores/useGame";
 
-const step = 0.1;
+const step = 5;
 
 const variableVector3 = new Vector3();
 
 export const Player = () => {
-  const {
-    playerPosition: [, setPlayerPosition],
-  } = useContext(AppContext)!;
+  const playerPositions = useGame((s) => s.playerPositions);
+  const setPlayerPositions = useGame((s) => s.setPlayerPositions);
 
-  const ref = useRef<Mesh | null>(null);
+  const body = useRef<RapierRigidBody | null>(null);
   const [subscribeKeys, getKeys] = useKeyboardControls();
 
   useEffect(() => {
@@ -32,41 +32,52 @@ export const Player = () => {
   }, []);
 
   useFrame(() => {
-    if (ref.current) {
+    if (body.current) {
       const { left, right, up, down } = getKeys();
 
       let _x = 0;
       let _y = 0;
       let _z = 0;
 
+      const impulse = { x: 0, y: 0, z: 0 };
+
       if (left) {
-        _x -= step;
+        impulse.x -= step;
       }
       if (right) {
-        _x += step;
+        impulse.x += step;
       }
       if (up) {
-        _y += step;
+        impulse.y += step;
       }
       if (down) {
-        _y -= step;
+        impulse.y -= step;
       }
 
-      const { x, y, z } = ref.current.position;
+      body.current.applyImpulse(impulse, true);
+
+      const { x, y, z } = body.current.translation();
       const newPosition = variableVector3.set(x + _x, y + _y, z + _z);
-      ref.current.position.set(newPosition.x, newPosition.y, newPosition.z);
-      setPlayerPosition(newPosition);
+      // console.log("newPosition", newPosition);
+      const positions = { ...playerPositions };
+      positions["me"] = newPosition;
+      setPlayerPositions(positions);
     }
   });
 
   return (
     <>
-      <HealthBar
-        health={50}
-        position={ref?.current?.position || new Vector3()}
-      />
-      <RigidBody type={"kinematicVelocity"}>
-        <mesh ref={ref}>
+      <HealthBar health={50} bodyRef={body} />
+      <RigidBody
+        ref={body}
+        lockRotations
+        canSleep={false}
+        restitution={0.2}
+        friction={1}
+        linearDamping={MOVEMENT_DAMPING * 3}
+        angularDamping={MOVEMENT_DAMPING * 2}
+      >
+        <mesh>
           <boxGeometry />
           <meshStandardMaterial />
         </mesh>

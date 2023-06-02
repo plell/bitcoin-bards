@@ -15,27 +15,27 @@ const enemies = [
   {
     startPosition: new Vector3(2, 4, 0),
     movementInterval: 1200,
-    speed: 2.5,
+    speed: 60,
   },
   {
     startPosition: new Vector3(-5, 9, 0),
     movementInterval: 1400,
-    speed: 5,
+    speed: 30,
   },
   {
     startPosition: new Vector3(8, -9, 0),
     movementInterval: 1900,
-    speed: 1,
+    speed: 20,
   },
   {
     startPosition: new Vector3(-6, -3, 0),
     movementInterval: 2300,
-    speed: 4,
+    speed: 10,
   },
   {
     startPosition: new Vector3(1, 9, 0),
     movementInterval: 2000,
-    speed: 2,
+    speed: 30,
   },
 ];
 
@@ -47,16 +47,16 @@ function App() {
           fov: 45,
           near: 0.1,
           far: 200,
-          position: [0, 0, 20],
+          position: [0, 0, 50],
         }}
       >
         <OrbitControls />
         <Perf position='top-left' />
         <Lights />
         <Loop />
-        <Terrain />
 
         <Physics gravity={[0, 0, 0]}>
+          <Terrain />
           <Player />
 
           {enemies.map((e, i) => (

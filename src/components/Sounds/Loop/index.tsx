@@ -1,46 +1,37 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Mesh } from "three";
-import AppContext from "../../hooks/createContext";
 import { playSound } from "../Tone";
+import { grid } from "../../../constants";
+import useGame from "../../../Stores/useGame";
 
-const step = 0.2;
-const startX = -20;
+const step = 50;
 
 export const Loop = () => {
-  const {
-    playerPosition: [playerPosition],
-    playerPositions: [playerPositions],
-  } = useContext(AppContext)!;
+  const playerPositions = useGame((s) => s.playerPositions);
 
   const ref = useRef<Mesh | null>(null);
   const [played, setPlayed] = useState(false);
   const [playedList, setPlayedList] = useState<string[]>([]);
 
   useEffect(() => {
-    console.log("played", played);
+    // console.log("played", played);
   }, [played, playedList]);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!ref.current) {
       return;
     }
 
     // reset looper
-    if (ref.current.position.x > 16) {
-      ref.current.position.x = startX;
+    if (ref.current.position.x > grid.width / 2) {
+      ref.current.position.x = -grid.width / 2;
       setPlayed(false);
       setPlayedList([]);
     }
 
     // move loop forward
-    ref.current.position.x += step;
-
-    // for the player
-    if (!played && playerPosition.x < ref.current.position.x) {
-      playSound();
-      setPlayed(true);
-    }
+    ref.current.position.x += delta * step;
 
     // for other players
     Object.keys(playerPositions).forEach((playerId) => {
@@ -58,7 +49,7 @@ export const Loop = () => {
 
   return (
     <mesh ref={ref}>
-      <boxGeometry args={[1, 30, 1]} />
+      <boxGeometry args={[1, grid.height, 1]} />
       <meshStandardMaterial />
     </mesh>
   );

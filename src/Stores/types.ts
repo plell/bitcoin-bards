@@ -9,4 +9,3 @@ export type Zone = {
     color: string;
     value: number;
 }
-

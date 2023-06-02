@@ -1,14 +1,14 @@
-import { useContext } from "react";
 import { grid } from "../../constants";
-import AppContext from "../hooks/createContext";
+import { Boundaries } from "./Boundaries";
+import useGame from "../../Stores/useGame";
 
 export const Terrain = () => {
-  const {
-    zones: [zones],
-  } = useContext(AppContext)!;
+  const zones = useGame((s) => s.zones);
 
   return (
     <>
+      <Boundaries />
+
       <mesh position={[grid.x, grid.y, grid.z]} rotation-z={Math.PI}>
         <planeGeometry args={[grid.width, grid.height]} />
         <meshStandardMaterial color={"white"} />
