@@ -1,22 +1,33 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useKeyboardControls } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Mesh, Vector3 } from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
-import { MOVEMENT_DAMPING } from "../../constants";
+import { MOVEMENT_DAMPING, grid } from "../../constants";
 import useGame from "../../Stores/useGame";
 
-const step = 5;
+const speed = 0.2;
+const maxSpeed = 5;
 
-const variableVector3 = new Vector3();
+const reuseableVector3a = new Vector3();
+const reuseableVector3b = new Vector3();
+
+function getDiff(a: number, b: number) {
+  return a - b;
+}
 
 export const Player = () => {
-  const playerPositions = useGame((s) => s.playerPositions);
-  const setPlayerPositions = useGame((s) => s.setPlayerPositions);
+  const playerBodyRefs = useGame((s) => s.playerBodyRefs);
+  const setPlayerBodyRefs = useGame((s) => s.setPlayerBodyRefs);
 
   const body = useRef<RapierRigidBody | null>(null);
-  const [subscribeKeys, getKeys] = useKeyboardControls();
+  const { viewport } = useThree();
+  const [subscribeKeys] = useKeyboardControls();
+
+  useLayoutEffect(() => {
+    setPlayerBodyRefs({ ...playerBodyRefs, me: body });
+  }, [body]);
 
   useEffect(() => {
     const unsubscribeUp = subscribeKeys(
@@ -31,37 +42,36 @@ export const Player = () => {
     };
   }, []);
 
-  useFrame(() => {
+  useFrame(({ mouse }) => {
     if (body.current) {
-      const { left, right, up, down } = getKeys();
+      const x = (mouse.x * viewport.width) / 2;
+      const y = (mouse.y * viewport.height) / 2;
 
-      let _x = 0;
-      let _y = 0;
-      let _z = 0;
+      const currentTranslation = body.current.translation();
+
+      const currentPosition = reuseableVector3a.set(
+        currentTranslation.x,
+        currentTranslation.y,
+        currentTranslation.z
+      );
+      const mousePosition = reuseableVector3b.set(x, y, currentTranslation.z);
 
       const impulse = { x: 0, y: 0, z: 0 };
 
-      if (left) {
-        impulse.x -= step;
+      let goX = getDiff(mousePosition.x, currentPosition.x);
+      let goY = getDiff(mousePosition.y, currentPosition.y);
+
+      impulse.x = goX * speed;
+      impulse.y = goY * speed;
+
+      if (Math.abs(impulse.x) > maxSpeed) {
+        impulse.x = maxSpeed;
       }
-      if (right) {
-        impulse.x += step;
-      }
-      if (up) {
-        impulse.y += step;
-      }
-      if (down) {
-        impulse.y -= step;
+      if (Math.abs(impulse.y) > maxSpeed) {
+        impulse.y = maxSpeed;
       }
 
       body.current.applyImpulse(impulse, true);
-
-      const { x, y, z } = body.current.translation();
-      const newPosition = variableVector3.set(x + _x, y + _y, z + _z);
-      // console.log("newPosition", newPosition);
-      const positions = { ...playerPositions };
-      positions["me"] = newPosition;
-      setPlayerPositions(positions);
     }
   });
 

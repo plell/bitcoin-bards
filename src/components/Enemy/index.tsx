@@ -14,12 +14,14 @@ type EnemyProps = {
 
 type Timeout = ReturnType<typeof setTimeout>;
 
+const reuseableVector3 = new Vector3();
+
 export const Enemy = ({
   startPosition,
   movementInterval,
   speed,
 }: EnemyProps) => {
-  const playerPositions = useGame((s) => s.playerPositions);
+  const playerBodyRefs = useGame((s) => s.playerBodyRefs);
 
   let timeout: Timeout = useMemo(
     () =>
@@ -31,12 +33,47 @@ export const Enemy = ({
 
   const body = useRef<RapierRigidBody | null>(null);
 
+  const getClosestPlayerPosition = () => {
+    const closest: any = {
+      key: "",
+      distance: null,
+      position: null,
+    };
+
+    Object.keys(playerBodyRefs).forEach((key) => {
+      const playerBodyRef = playerBodyRefs[key];
+      const aPosition = playerBodyRef?.current?.translation();
+      const bPosition = body?.current?.translation();
+      if (aPosition !== undefined && bPosition !== undefined) {
+        const playerPosition = reuseableVector3.set(
+          aPosition?.x,
+          aPosition?.y,
+          aPosition?.z
+        );
+        const enemyPosition = reuseableVector3.set(
+          bPosition?.x,
+          bPosition?.y,
+          bPosition?.z
+        );
+
+        const distance = enemyPosition.distanceTo(playerPosition);
+        if (!closest.distance || closest.distance > distance) {
+          closest.key = key;
+          closest.distance = distance;
+          closest.position = playerPosition;
+        }
+      }
+    });
+
+    if (closest.position) {
+      return closest.position;
+    }
+
+    return reuseableVector3.set(0, 0, 0);
+  };
+
   const [destination, setDestination] = useState<Vector3>(
-    new Vector3(
-      playerPositions["me"]?.x || 0,
-      playerPositions["me"]?.y || 0,
-      playerPositions["me"]?.z || 0
-    )
+    getClosestPlayerPosition()
   );
 
   useEffect(() => {
@@ -48,13 +85,14 @@ export const Enemy = ({
   }, []);
 
   const updateDestination = useCallback(() => {
-    const closestPlayer = playerPositions["me"] || new Vector3();
-    setDestination(closestPlayer.clone());
+    const closestPlayerPosition = getClosestPlayerPosition();
+
+    setDestination(closestPlayerPosition.clone());
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       updateDestination();
     }, movementInterval);
-  }, [playerPositions]);
+  }, [playerBodyRefs]);
 
   useEffect(() => {
     applyForce();

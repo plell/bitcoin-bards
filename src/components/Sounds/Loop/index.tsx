@@ -8,7 +8,7 @@ import useGame from "../../../Stores/useGame";
 const step = 50;
 
 export const Loop = () => {
-  const playerPositions = useGame((s) => s.playerPositions);
+  const playerBodyRefs = useGame((s) => s.playerBodyRefs);
 
   const ref = useRef<Mesh | null>(null);
   const [played, setPlayed] = useState(false);
@@ -34,8 +34,8 @@ export const Loop = () => {
     ref.current.position.x += delta * step;
 
     // for other players
-    Object.keys(playerPositions).forEach((playerId) => {
-      const pp = playerPositions[playerId];
+    Object.keys(playerBodyRefs).forEach((playerId) => {
+      const pp = playerBodyRefs[playerId];
 
       if (
         !playedList?.includes(playerId) &&

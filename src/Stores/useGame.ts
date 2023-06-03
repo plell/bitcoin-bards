@@ -1,22 +1,21 @@
-import { Vector3 } from 'three'
 import create from 'zustand'
-import { PlayerPositions, Zone } from './types'
+import { BodyRefs, Zone } from './types'
 import { initialZones } from '../constants'
 
 type GameState = {
-    playerPositions: Record<string, Vector3>
-    enemyPositions: Record<string, Vector3>
+    playerBodyRefs: BodyRefs
+    eenemyBodyRefs: BodyRefs
     zones: Zone[]
-    setPlayerPositions: (playerPositions: PlayerPositions) => void
-    setEnemyPositions: (enemyPositions: PlayerPositions) => void
+    setPlayerBodyRefs: (playerBodyRefs: BodyRefs) => void
+    setEnemyBodyRefs: (eenemyBodyRefs: BodyRefs) => void
     setZones: (zones: Zone[]) => void
 }
 
 export default create<GameState>((set, get) => ({
-    playerPositions: {},
-    enemyPositions: {},
+    playerBodyRefs: {},
+    eenemyBodyRefs: {},
     zones: initialZones,
-    setPlayerPositions: (playerPositions) => set({ playerPositions }),
-    setEnemyPositions: (enemyPositions) => set({ enemyPositions }),
+    setPlayerBodyRefs: (playerBodyRefs) => set({ playerBodyRefs }),
+    setEnemyBodyRefs: (eenemyBodyRefs) => set({ eenemyBodyRefs }),
     setZones: (zones) =>  set({ zones }),
 }))
