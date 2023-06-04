@@ -42,26 +42,15 @@ const enemies = [
 function App() {
   return (
     <KeyboardControls map={controls}>
-      <Canvas
-        camera={{
-          fov: 45,
-          near: 0.1,
-          far: 200,
-          position: [0, 0, 50],
-        }}
-      >
-        {/* <OrthographicCamera
-          makeDefault
-          zoom={1}
-          top={200}
-          bottom={-200}
-          left={200}
-          right={-200}
-          near={1}
-          far={2000}
-          position={[0, 0, 50]}
-        /> */}
-        <OrbitControls />
+      <Canvas>
+        <OrthographicCamera
+          makeDefault // Make this camera the default
+          position={[0, 0, 20]}
+          near={0.1}
+          far={60}
+          zoom={14} // Zoom level (1 is default, higher values zoom out)
+        />
+        {/* <OrbitControls /> */}
         <Perf position='top-left' />
         <Lights />
         <Loop />

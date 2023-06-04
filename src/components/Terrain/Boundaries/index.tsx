@@ -39,8 +39,8 @@ export const Boundaries = () => {
             position={w.pos}
           >
             <mesh>
-              <boxGeometry args={w.args} />
-              <meshStandardMaterial color={"white"} />
+              <boxGeometry args={w.arg} />
+              <meshStandardMaterial transparent opacity={0} />
             </mesh>
           </RigidBody>
         );

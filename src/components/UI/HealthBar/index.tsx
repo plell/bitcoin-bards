@@ -1,5 +1,5 @@
-import React, { Ref, useRef } from "react";
-import { useThree, useFrame } from "@react-three/fiber";
+import React, { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import { Plane } from "@react-three/drei";
 import { Group, Mesh, Vector3 } from "three";
 import { RapierRigidBody } from "@react-three/rapier";

@@ -52,7 +52,7 @@ export const playSound = async (note = 310) => {
 
     pitch += addOrganicVariant();
 
-    monoSynth.triggerAttackRelease(200, 0.1);
+    monoSynth.triggerAttackRelease(pitch, 0.01);
   } catch (e) {
     console.warn(e);
   }
