@@ -1,13 +1,4 @@
-type Note = {
-    id: number
-    step: number
-    pitch: number
-}
-
-type Pattern = {
-    stepCount: number
-    notes: Note[]
-}
+import { Pattern } from "./types"
 
 export const pattern: Pattern = {
     stepCount: 10,

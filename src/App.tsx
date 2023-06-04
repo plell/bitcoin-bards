@@ -53,9 +53,9 @@ function App() {
         {/* <OrbitControls /> */}
         <Perf position='top-left' />
         <Lights />
-        <Loop />
 
         <Physics gravity={[0, 0, 0]}>
+          <Loop />
           <Terrain />
           <Player />
 

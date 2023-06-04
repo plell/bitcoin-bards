@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { useKeyboardControls } from "@react-three/drei";
+import { useKeyboardControls, useSelect } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";

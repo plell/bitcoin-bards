@@ -4,7 +4,6 @@ import { Mesh } from "three";
 import { playSound } from "../Tone";
 import { grid } from "../../../constants";
 import useGame from "../../../Stores/useGame";
-import { pattern } from "./constants";
 
 const speed = 50;
 
@@ -15,6 +14,7 @@ const getNoteGridPosition = (step: number, stepCount: number) => {
 
 export const Loop = () => {
   const playerBodyRefs = useGame((s) => s.playerBodyRefs);
+  const loopPattern = useGame((s) => s.loopPattern);
 
   const ref = useRef<Mesh | null>(null);
   const [playedList, setPlayedList] = useState<string[]>([]);
@@ -51,23 +51,36 @@ export const Loop = () => {
     });
 
     // do pattern
-    pattern.notes.forEach((p) => {
-      const x = getNoteGridPosition(p.step, pattern.stepCount);
+    loopPattern.notes.forEach((note) => {
+      const x = getNoteGridPosition(note.step, loopPattern.stepCount);
 
       if (
-        !playedPattern?.includes(p.id) &&
+        !playedPattern?.includes(note.id) &&
         x < (ref?.current?.position.x || 0)
       ) {
-        playSound();
-        setPlayedPattern([...playedPattern, p.id]);
+        playSound(note.pitch);
+        setPlayedPattern([...playedPattern, note.id]);
       }
     });
   });
 
   return (
-    <mesh ref={ref}>
-      <boxGeometry args={[1, grid.height, 1]} />
-      <meshStandardMaterial />
-    </mesh>
+    <>
+      <mesh ref={ref}>
+        <boxGeometry args={[1, grid.height, 1]} />
+        <meshStandardMaterial />
+      </mesh>
+
+      {/* patterns */}
+      {loopPattern.notes.map((note, i) => {
+        const x = getNoteGridPosition(note.step, loopPattern.stepCount);
+        return (
+          <mesh key={i} position={[x, 0, 0]} userData={note}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color={"red"} />
+          </mesh>
+        );
+      })}
+    </>
   );
 };
