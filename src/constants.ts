@@ -66,3 +66,7 @@ export const initialZones = [
   ]
 
 export const MOVEMENT_DAMPING = 5
+
+export const getMovement = (a: number, b: number) => {
+  return a - b;
+}

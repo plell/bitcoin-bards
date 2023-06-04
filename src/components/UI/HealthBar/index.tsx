@@ -9,6 +9,8 @@ interface HealthBarProps {
   bodyRef: React.MutableRefObject<RapierRigidBody | null>;
 }
 
+const reuseableVector3 = new Vector3();
+
 export const HealthBar: React.FC<HealthBarProps> = ({ health, bodyRef }) => {
   const barWidth = 1;
   const barHeight = 0.2;
@@ -26,7 +28,7 @@ export const HealthBar: React.FC<HealthBarProps> = ({ health, bodyRef }) => {
     if (groupRef?.current && bodyRef?.current) {
       const { x, y, z } = bodyRef.current.translation();
 
-      groupRef?.current.position.set(x, y, z);
+      groupRef?.current.position.copy(reuseableVector3.set(x, y, z));
     }
   });
 

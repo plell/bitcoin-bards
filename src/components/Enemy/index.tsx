@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Mesh, Vector3 } from "three";
 
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
-import { MOVEMENT_DAMPING } from "../../constants";
+import { MOVEMENT_DAMPING, getMovement } from "../../constants";
 import HealthBar from "../UI/HealthBar";
 import useGame from "../../Stores/useGame";
 
@@ -12,9 +12,12 @@ type EnemyProps = {
   speed: number;
 };
 
-type Timeout = ReturnType<typeof setTimeout>;
+type Interval = ReturnType<typeof setInterval>;
 
-const reuseableVector3 = new Vector3();
+const reuseableVector3a = new Vector3();
+const reuseableVector3b = new Vector3();
+
+const maxSpeed = 8;
 
 export const Enemy = ({
   startPosition,
@@ -23,44 +26,61 @@ export const Enemy = ({
 }: EnemyProps) => {
   const playerBodyRefs = useGame((s) => s.playerBodyRefs);
 
-  let timeout: Timeout = useMemo(
-    () =>
-      setTimeout(() => {
-        updateDestination();
-      }, movementInterval),
-    []
-  );
+  let interval: Interval | null = null;
+
+  useEffect(() => {
+    if (interval) {
+      clearInterval(interval);
+    }
+    interval = setInterval(() => {
+      applyForce();
+    }, movementInterval);
+
+    return function () {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [playerBodyRefs]);
 
   const body = useRef<RapierRigidBody | null>(null);
 
-  const getClosestPlayerPosition = () => {
+  const getClosestMeshPosition = (
+    sourceRigidBody: React.MutableRefObject<RapierRigidBody | null>,
+    surroundingRigidBodies: Record<
+      string,
+      React.MutableRefObject<RapierRigidBody | null>
+    >
+  ) => {
     const closest: any = {
       key: "",
       distance: null,
       position: null,
     };
 
-    Object.keys(playerBodyRefs).forEach((key) => {
-      const playerBodyRef = playerBodyRefs[key];
-      const aPosition = playerBodyRef?.current?.translation();
-      const bPosition = body?.current?.translation();
+    Object.keys(surroundingRigidBodies).forEach((key) => {
+      const meshBodyRef = surroundingRigidBodies[key];
+
+      const aPosition = meshBodyRef?.current?.translation();
+      const bPosition = sourceRigidBody?.current?.translation();
       if (aPosition !== undefined && bPosition !== undefined) {
-        const playerPosition = reuseableVector3.set(
+        const targetPosition = reuseableVector3a.set(
           aPosition?.x,
           aPosition?.y,
           aPosition?.z
         );
-        const enemyPosition = reuseableVector3.set(
+        const sourcePosition = reuseableVector3b.set(
           bPosition?.x,
           bPosition?.y,
           bPosition?.z
         );
 
-        const distance = enemyPosition.distanceTo(playerPosition);
+        const distance = sourcePosition.distanceTo(targetPosition);
+
         if (!closest.distance || closest.distance > distance) {
           closest.key = key;
           closest.distance = distance;
-          closest.position = playerPosition;
+          closest.position = targetPosition;
         }
       }
     });
@@ -69,52 +89,22 @@ export const Enemy = ({
       return closest.position;
     }
 
-    return reuseableVector3.set(0, 0, 0);
+    return new Vector3(0, 0, 0);
   };
-
-  const [destination, setDestination] = useState<Vector3>(
-    getClosestPlayerPosition()
-  );
-
-  useEffect(() => {
-    return function () {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    };
-  }, []);
-
-  const updateDestination = useCallback(() => {
-    const closestPlayerPosition = getClosestPlayerPosition();
-
-    setDestination(closestPlayerPosition.clone());
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      updateDestination();
-    }, movementInterval);
-  }, [playerBodyRefs]);
-
-  useEffect(() => {
-    applyForce();
-  }, [destination]);
 
   const applyForce = () => {
     if (body.current) {
       const currentPosition = body.current.translation();
+
       const impulse = { x: 0, y: 0, z: 0 };
 
-      if (destination.x < currentPosition.x) {
-        impulse.x -= speed;
-      }
-      if (destination.x > currentPosition.x) {
-        impulse.x += speed;
-      }
-      if (destination.y < currentPosition.y) {
-        impulse.y -= speed;
-      }
-      if (destination.y > currentPosition.y) {
-        impulse.y += speed;
-      }
+      const destination = getClosestMeshPosition(body, playerBodyRefs);
+
+      let goX = getMovement(destination.x, currentPosition.x);
+      let goY = getMovement(destination.y, currentPosition.y);
+
+      impulse.x = goX * speed * 0.2;
+      impulse.y = goY * speed * 0.2;
 
       body.current.applyImpulse(impulse, true);
     }

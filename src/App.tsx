@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, OrthographicCamera } from "@react-three/drei";
 import { Lights } from "./components/Lights";
 import { Player } from "./components/Player";
 import { Terrain } from "./components/Terrain";
@@ -50,6 +50,17 @@ function App() {
           position: [0, 0, 50],
         }}
       >
+        {/* <OrthographicCamera
+          makeDefault
+          zoom={1}
+          top={200}
+          bottom={-200}
+          left={200}
+          right={-200}
+          near={1}
+          far={2000}
+          position={[0, 0, 50]}
+        /> */}
         <OrbitControls />
         <Perf position='top-left' />
         <Lights />

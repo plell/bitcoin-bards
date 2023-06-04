@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Mesh, Vector3 } from "three";
+import { Vector3 } from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
-import { MOVEMENT_DAMPING, grid } from "../../constants";
+import { MOVEMENT_DAMPING, getMovement } from "../../constants";
 import useGame from "../../Stores/useGame";
 
 const speed = 0.2;
@@ -12,10 +12,6 @@ const maxSpeed = 5;
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
-
-function getDiff(a: number, b: number) {
-  return a - b;
-}
 
 export const Player = () => {
   const playerBodyRefs = useGame((s) => s.playerBodyRefs);
@@ -27,7 +23,7 @@ export const Player = () => {
 
   useLayoutEffect(() => {
     setPlayerBodyRefs({ ...playerBodyRefs, me: body });
-  }, [body]);
+  }, [body?.current]);
 
   useEffect(() => {
     const unsubscribeUp = subscribeKeys(
@@ -58,8 +54,8 @@ export const Player = () => {
 
       const impulse = { x: 0, y: 0, z: 0 };
 
-      let goX = getDiff(mousePosition.x, currentPosition.x);
-      let goY = getDiff(mousePosition.y, currentPosition.y);
+      let goX = getMovement(mousePosition.x, currentPosition.x);
+      let goY = getMovement(mousePosition.y, currentPosition.y);
 
       impulse.x = goX * speed;
       impulse.y = goY * speed;
