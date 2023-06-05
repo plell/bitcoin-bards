@@ -12,6 +12,7 @@ import { Physics } from "@react-three/rapier";
 import useGame from "./Stores/useGame";
 import { useEffect, useState } from "react";
 import { Interval } from "./Stores/types";
+import { v4 as uuidv4 } from "uuid";
 
 let enemyGeneratorTimeout: Interval = null;
 const generatorSpeed = 2000;
@@ -37,7 +38,7 @@ function App() {
 
   const addNewEnemy = () => {
     const enemiesCopy = { ...enemies };
-    const newEnemyId = Object.keys(enemiesCopy).length;
+    const newEnemyId = uuidv4();
     enemiesCopy[newEnemyId] = {
       id: newEnemyId,
       body: null,
@@ -69,9 +70,12 @@ function App() {
 
           <Player />
 
-          {Object.values(enemies).map((e, i) => (
-            <Enemy key={`enemy-${i}`} {...e} />
-          ))}
+          {Object.values(enemies).map((e, i) => {
+            if (e.dead) {
+              return null;
+            }
+            return <Enemy key={`enemy-${i}`} {...e} />;
+          })}
         </Physics>
       </Canvas>
     </KeyboardControls>

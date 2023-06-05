@@ -57,6 +57,14 @@ export const Enemy = (props: Player) => {
     return getEnemyStartPosition();
   }, []);
 
+  useEffect(() => {
+    if (health < 0 && !enemies[props.id].dead) {
+      const enemiesCopy = { ...enemies };
+      enemiesCopy[props.id].dead = true;
+      setEnemies(enemiesCopy);
+    }
+  }, [health, enemies]);
+
   useLayoutEffect(() => {
     const enemiesCopy = { ...enemies };
     enemiesCopy[props.id].body = body;
