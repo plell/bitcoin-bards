@@ -41,6 +41,9 @@ function addOrganicVariant() {
 let toneStarted = false;
 
 export const playSound = async (note = 310) => {
+  // silence
+  return;
+
   try {
     // start if not started
     if (!toneStarted) {

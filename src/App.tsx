@@ -70,6 +70,13 @@ function App() {
 
           <Player />
 
+          {/* {Object.values(players).map((p, i) => {
+            if (p.dead) {
+              return null;
+            }
+            return <RemotePlayer key={`remore-player-${i}`} {...p} />;
+          })} */}
+
           {Object.values(enemies).map((e, i) => {
             if (e.dead) {
               return null;

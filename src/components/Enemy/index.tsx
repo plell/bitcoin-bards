@@ -178,7 +178,7 @@ export const Enemy = (props: Player) => {
         }}
       >
         <mesh>
-          <sphereGeometry />
+          <sphereGeometry args={[0.4]} />
           <meshBasicMaterial color='red' />
         </mesh>
       </RigidBody>

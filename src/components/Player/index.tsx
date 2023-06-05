@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useKeyboardControls } from "@react-three/drei";
+import { useKeyboardControls, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Vector3 } from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
@@ -18,14 +18,14 @@ export const Player = () => {
   const players = useGame((s) => s.players);
   const setPlayers = useGame((s) => s.setPlayers);
 
+  const playerTexture = useTexture("sprites/tomo.png");
+
   const [playerId, setPlayerId] = useState<string>("init");
 
   const body = useRef<RapierRigidBody | null>(null);
   const group = useRef<Group | null>(null);
   const { viewport } = useThree();
   const [subscribeKeys] = useKeyboardControls();
-
-  const playerProps = players[playerId] || {};
 
   const health = useMemo(() => {
     const currentHealth = players[playerId]?.health || 0;
@@ -143,7 +143,7 @@ export const Player = () => {
       >
         <mesh>
           <boxGeometry />
-          <meshStandardMaterial />
+          <meshStandardMaterial transparent map={playerTexture} />
         </mesh>
       </RigidBody>
     </>
