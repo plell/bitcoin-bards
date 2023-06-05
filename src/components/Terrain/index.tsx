@@ -5,11 +5,20 @@ import useGame from "../../Stores/useGame";
 export const Terrain = () => {
   const zones = useGame((s) => s.zones);
 
+  const setAttack = useGame((s) => s.setAttack);
+  const attack = useGame((s) => s.attack);
+
   return (
     <>
       <Boundaries />
 
-      <mesh position={[grid.x, grid.y, grid.z]} rotation-z={Math.PI}>
+      <mesh
+        onClick={() => {
+          setAttack(!attack);
+        }}
+        position={[grid.x, grid.y, grid.z]}
+        rotation-z={Math.PI}
+      >
         <planeGeometry args={[grid.width, grid.height]} />
         <meshStandardMaterial color={"white"} />
       </mesh>

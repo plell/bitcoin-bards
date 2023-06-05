@@ -1,55 +1,75 @@
 import { useEffect, useRef, useState, useMemo, useLayoutEffect } from "react";
-import { Vector3 } from "three";
+import { Group, Vector3 } from "three";
 
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
-import { MOVEMENT_DAMPING, getMovement } from "../../constants";
+import { MOVEMENT_DAMPING, getMovement, grid } from "../../constants";
 import HealthBar from "../UI/HealthBar";
 import useGame from "../../Stores/useGame";
-import { Players } from "../../Stores/types";
-
-type EnemyProps = {
-  startPosition: Vector3;
-  movementInterval: number;
-  speed: number;
-};
+import { Player, Players } from "../../Stores/types";
+import { useFrame } from "@react-three/fiber";
 
 type Interval = ReturnType<typeof setInterval>;
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
+const reuseableVector3c = new Vector3();
 
-export const Enemy = ({
-  startPosition,
-  movementInterval,
-  speed,
-}: EnemyProps) => {
+const movementInterval = 600;
+const speed = 5;
+
+const padding = 1;
+const getEnemyStartPosition = () => {
+  let x =
+    Math.random() - 0.5 < 0
+      ? -(grid.width / 2) + padding
+      : grid.width / 2 - padding;
+  let y =
+    Math.random() - 0.5 < 0
+      ? -(grid.height / 2) + padding
+      : grid.height / 2 - padding;
+
+  const side = Math.random() - 0.5;
+  if (side < 0) {
+    x = Math.random() * grid.width - grid.width / 2;
+  } else {
+    y = Math.random() * grid.height - grid.height / 2;
+  }
+
+  return new Vector3(x, y, 0);
+};
+
+export const Enemy = (props: Player) => {
   const players = useGame((s) => s.players);
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
-  const [id, setId] = useState(0);
 
   const body = useRef<RapierRigidBody | null>(null);
+  const group = useRef<Group | null>(null);
 
   const health = useMemo(() => {
-    const currentHealth = enemies[id]?.health || 0;
+    const currentHealth = enemies[props.id]?.health || 0;
     return currentHealth;
-  }, [enemies, id]);
+  }, [enemies, props.id]);
 
   let interval: Interval | null = null;
 
+  const startPosition = useMemo(() => {
+    return getEnemyStartPosition();
+  }, []);
+
   useLayoutEffect(() => {
-    const id = Object.keys(enemies).length;
-    setId(id);
-    setEnemies({
-      ...enemies,
-      [id]: {
-        id,
-        body,
-        health: 100,
-        type: "enemy",
-      },
-    });
-  }, [body?.current]);
+    const enemiesCopy = { ...enemies };
+    enemiesCopy[props.id].body = body;
+    setEnemies(enemiesCopy);
+  }, []);
+
+  useFrame(() => {
+    if (group?.current && body?.current) {
+      const pos = body.current.translation();
+      const currentPosition = reuseableVector3c.set(pos.x, pos.y, pos.z);
+      group?.current.position.copy(currentPosition);
+    }
+  });
 
   useEffect(() => {
     if (interval) {
@@ -131,7 +151,10 @@ export const Enemy = ({
 
   return (
     <>
-      <HealthBar health={health} bodyRef={body} />
+      <group ref={group}>
+        <HealthBar health={health} />
+      </group>
+
       <RigidBody
         ref={body}
         restitution={6}

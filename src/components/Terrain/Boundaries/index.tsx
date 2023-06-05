@@ -9,7 +9,14 @@ const right = grid.x + grid.width / 2;
 
 type Wall = {
   pos: Vector3;
-  args: number[];
+  args: [
+    width?: number | undefined,
+    height?: number | undefined,
+    depth?: number | undefined,
+    widthSegments?: number | undefined,
+    heightSegments?: number | undefined,
+    depthSegments?: number | undefined
+  ];
 };
 const walls: Wall[] = [
   {

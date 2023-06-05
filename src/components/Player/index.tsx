@@ -1,18 +1,12 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Vector3 } from "three";
+import { Group, Vector3 } from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
 import { MOVEMENT_DAMPING, getMovement } from "../../constants";
 import useGame from "../../Stores/useGame";
+import { AttackEffect } from "./Effects/Attack";
 
 const speed = 0.2;
 const maxSpeed = 5;
@@ -23,11 +17,11 @@ const reuseableVector3b = new Vector3();
 export const Player = () => {
   const players = useGame((s) => s.players);
   const setPlayers = useGame((s) => s.setPlayers);
-  const setPlayerDied = useGame((s) => s.setPlayerDied);
 
   const [playerId, setPlayerId] = useState<string>("init");
 
   const body = useRef<RapierRigidBody | null>(null);
+  const group = useRef<Group | null>(null);
   const { viewport } = useThree();
   const [subscribeKeys] = useKeyboardControls();
 
@@ -39,9 +33,8 @@ export const Player = () => {
   useEffect(() => {
     if (health < 0) {
       const playersCopy = { ...players };
-      delete playersCopy[playerId];
+      playersCopy[playerId].dead = true;
       setPlayers(playersCopy);
-      setPlayerDied(true);
     }
   }, [health]);
 
@@ -57,9 +50,10 @@ export const Player = () => {
         body,
         health: 100,
         type: "player",
+        dead: false,
       },
     });
-  }, [body?.current]);
+  }, []);
 
   useEffect(() => {
     const unsubscribeUp = subscribeKeys(
@@ -86,6 +80,11 @@ export const Player = () => {
         currentTranslation.y,
         currentTranslation.z
       );
+
+      if (group?.current) {
+        group?.current.position.copy(currentPosition);
+      }
+
       const mousePosition = reuseableVector3b.set(x, y, currentTranslation.z);
 
       const impulse = { x: 0, y: 0, z: 0 };
@@ -108,18 +107,20 @@ export const Player = () => {
   });
 
   const takeDamage = (damage: number) => {
-    console.log("takeDamage");
     const playersCopy = { ...players };
-    console.log("playersCopy", playersCopy);
-    console.log("before", playersCopy[playerId]?.health);
+
     playersCopy[playerId].health -= damage;
-    console.log("after", playersCopy[playerId]?.health);
+
     setPlayers(playersCopy);
   };
 
   return (
     <>
-      <HealthBar health={health} bodyRef={body} />
+      <group ref={group}>
+        <HealthBar health={health} />
+        <AttackEffect />
+      </group>
+
       <RigidBody
         ref={body}
         lockRotations
@@ -128,12 +129,11 @@ export const Player = () => {
         friction={1}
         linearDamping={MOVEMENT_DAMPING * 3}
         angularDamping={MOVEMENT_DAMPING * 2}
-        onCollisionEnter={({ target }) => {
-          // console.log("ouch", target.rigidBodyObject?.userData?.type);
-          // if (target.rigidBodyObject?.userData?.type === "enemy") {
-          const damage = target.rigidBodyObject?.userData?.strength || 10;
-          takeDamage(damage);
-          // }
+        onCollisionEnter={({ other }) => {
+          if (other.rigidBodyObject?.userData?.type === "enemy") {
+            const damage = other.rigidBodyObject?.userData?.strength || 10;
+            takeDamage(damage);
+          }
         }}
         userData={{
           type: "player",

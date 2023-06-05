@@ -27,43 +27,12 @@ export const grid = {
     height: 50
 }
 
-const zoneWidth = grid.width / 4
-const zoneHeight = grid.height
-const gridLeft = grid.x - grid.width/2 + zoneWidth/2
+export const zoneWidth = grid.width / 4
+export const zoneHeight = grid.height
+export const gridLeft = grid.x - grid.width/2 + zoneWidth/2
+export const zoneZ = -0.5
 
-const zoneZ = -0.5
 
-
-export const initialZones = [
-    {
-      position: new Vector3(gridLeft, 0, zoneZ),
-      width: zoneWidth,
-      height: zoneHeight,
-      color: "red",
-      value: 2,
-    },
-    {
-      position: new Vector3(gridLeft+zoneWidth, 0, zoneZ),
-      width: zoneWidth,
-      height: zoneHeight,
-      color: "blue",
-      value: 3,
-    },
-    {
-      position: new Vector3(gridLeft+zoneWidth*2, 0, zoneZ),
-      width: zoneWidth,
-      height: zoneHeight,
-      color: "teal",
-      value: 4,
-    },
-    {
-        position: new Vector3(gridLeft+zoneWidth*3, 0, zoneZ),
-        width: zoneWidth,
-        height: zoneHeight,
-        color: "lime",
-        value: 8,
-      },
-  ]
 
 export const MOVEMENT_DAMPING = 5
 

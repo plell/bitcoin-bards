@@ -7,9 +7,10 @@ export type Players = Record<string, Player>
 
 export type Player = {
     id: string | number
-    body: React.MutableRefObject<RapierRigidBody | null>
+    body: React.MutableRefObject<RapierRigidBody | null> | null
     health: number
     type: string
+    dead: boolean
 }
 
 export type Zone = {
@@ -30,3 +31,6 @@ export type Pattern = {
     stepCount: number
     notes: Note[]
 }
+
+export type Interval = ReturnType<typeof setInterval> | null;
+export type Timeout = ReturnType<typeof setTimeout> | null;

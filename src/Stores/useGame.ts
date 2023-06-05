@@ -1,15 +1,14 @@
 import create from 'zustand'
 import { Players, Pattern, Zone } from './types'
-import { initialZones } from '../constants'
-import { pattern } from './constants'
+import { pattern, initialEnemyState, initialZones } from './constants'
 
 type GameState = {
-    playerDied: boolean
+    attack: boolean
     players: Players
     enemies: Players
     zones: Zone[]
     loopPattern: Pattern
-    setPlayerDied: (playerDied: boolean) => void
+    setAttack: (attack: boolean) => void
     setPlayers: (players: Players) => void
     setEnemies: (enemies: Players) => void
     setZones: (zones: Zone[]) => void
@@ -17,12 +16,12 @@ type GameState = {
 }
 
 export default create<GameState>((set, get) => ({
-    playerDied: false,
+    attack: false,
     players: {},
-    enemies: {},
+    enemies: initialEnemyState,
     zones: initialZones,
     loopPattern: pattern,
-    setPlayerDied: (playerDied) => set({ playerDied }),
+    setAttack: (attack) => set({ attack }),
     setPlayers: (players) => set({ players }),
     setEnemies: (enemies) => set({ enemies }),
     setZones: (zones) => set({ zones }),

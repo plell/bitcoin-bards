@@ -4,7 +4,6 @@ import { Mesh } from "three";
 import { playSound } from "../Tone";
 import { grid } from "../../../constants";
 import useGame from "../../../Stores/useGame";
-import { Player } from "../../../Stores/types";
 
 const speed = 50;
 
@@ -23,12 +22,6 @@ export const Loop = () => {
 
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
-
-  const dealDamage = (id: string | number, damage: number) => {
-    const enemiesCopy = { ...enemies };
-    enemiesCopy[id].health -= damage;
-    setEnemies(enemiesCopy);
-  };
 
   useFrame((_, delta) => {
     if (!ref.current) {
@@ -58,12 +51,11 @@ export const Loop = () => {
         playSound();
         setPlayedList([...playedList, playerId]);
 
-        const enemiesCopy = { ...enemies };
         // do enemy damage
+        const enemiesCopy = { ...enemies };
         Object.keys(enemies).forEach((id: string) => {
           enemiesCopy[id].health -= 10;
         });
-
         setEnemies(enemiesCopy);
       }
     });
