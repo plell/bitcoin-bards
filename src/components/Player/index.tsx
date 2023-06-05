@@ -25,18 +25,20 @@ export const Player = () => {
   const { viewport } = useThree();
   const [subscribeKeys] = useKeyboardControls();
 
+  const playerProps = players[playerId] || {};
+
   const health = useMemo(() => {
     const currentHealth = players[playerId]?.health || 0;
     return currentHealth;
   }, [players, playerId]);
 
   useEffect(() => {
-    if (health < 0) {
+    if (health < 0 && !players[playerId].dead) {
       const playersCopy = { ...players };
       playersCopy[playerId].dead = true;
       setPlayers(playersCopy);
     }
-  }, [health]);
+  }, [health, players]);
 
   useLayoutEffect(() => {
     const id = "p1";
