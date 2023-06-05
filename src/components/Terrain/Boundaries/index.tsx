@@ -7,22 +7,26 @@ const bottom = grid.y - grid.height / 2;
 const left = grid.x - grid.width / 2;
 const right = grid.x + grid.width / 2;
 
-const walls = [
+type Wall = {
+  pos: Vector3;
+  args: number[];
+};
+const walls: Wall[] = [
   {
     pos: new Vector3(grid.x, top, grid.z),
-    args: [grid.width, 1, 5],
+    args: [grid.width, 4, 5],
   },
   {
     pos: new Vector3(grid.x, bottom, grid.z),
-    args: [grid.width, 1, 5],
+    args: [grid.width, 4, 5],
   },
   {
     pos: new Vector3(left, grid.y, grid.z),
-    args: [1, grid.height, 5],
+    args: [4, grid.height, 5],
   },
   {
     pos: new Vector3(right, grid.y, grid.z),
-    args: [1, grid.height, 5],
+    args: [4, grid.height, 5],
   },
 ];
 
@@ -39,7 +43,7 @@ export const Boundaries = () => {
             position={w.pos}
           >
             <mesh>
-              <boxGeometry args={w.arg} />
+              <boxGeometry args={w.args} />
               <meshStandardMaterial transparent opacity={0} />
             </mesh>
           </RigidBody>

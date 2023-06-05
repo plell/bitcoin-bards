@@ -10,6 +10,7 @@ import { Loop } from "./components/Sounds/Loop";
 import { Enemy } from "./components/Enemy";
 import { Physics } from "@react-three/rapier";
 import { Vector3 } from "three";
+import useGame from "./Stores/useGame";
 
 const enemies = [
   {
@@ -40,6 +41,8 @@ const enemies = [
 ];
 
 function App() {
+  const playerDied = useGame((s) => s.playerDied);
+
   return (
     <KeyboardControls map={controls}>
       <Canvas>
@@ -57,7 +60,8 @@ function App() {
         <Physics gravity={[0, 0, 0]}>
           <Loop />
           <Terrain />
-          <Player />
+
+          {!playerDied && <Player />}
 
           {enemies.map((e, i) => (
             <Enemy

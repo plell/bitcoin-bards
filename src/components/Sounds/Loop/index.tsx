@@ -4,6 +4,7 @@ import { Mesh } from "three";
 import { playSound } from "../Tone";
 import { grid } from "../../../constants";
 import useGame from "../../../Stores/useGame";
+import { Player } from "../../../Stores/types";
 
 const speed = 50;
 
@@ -13,12 +14,21 @@ const getNoteGridPosition = (step: number, stepCount: number) => {
 };
 
 export const Loop = () => {
-  const playerBodyRefs = useGame((s) => s.playerBodyRefs);
+  const players = useGame((s) => s.players);
   const loopPattern = useGame((s) => s.loopPattern);
 
   const ref = useRef<Mesh | null>(null);
   const [playedList, setPlayedList] = useState<string[]>([]);
   const [playedPattern, setPlayedPattern] = useState<number[]>([]);
+
+  const enemies = useGame((s) => s.enemies);
+  const setEnemies = useGame((s) => s.setEnemies);
+
+  const dealDamage = (id: string | number, damage: number) => {
+    const enemiesCopy = { ...enemies };
+    enemiesCopy[id].health -= damage;
+    setEnemies(enemiesCopy);
+  };
 
   useFrame((_, delta) => {
     if (!ref.current) {
@@ -36,10 +46,10 @@ export const Loop = () => {
     ref.current.position.x += delta * speed;
 
     // for other players
-    Object.keys(playerBodyRefs).forEach((playerId) => {
-      const pp = playerBodyRefs[playerId];
+    Object.keys(players).forEach((playerId) => {
+      const pp = players[playerId];
 
-      const { x } = pp?.current?.translation() || { x: 0 };
+      const { x } = pp?.body?.current?.translation() || { x: 0 };
 
       if (
         !playedList?.includes(playerId) &&
@@ -47,6 +57,14 @@ export const Loop = () => {
       ) {
         playSound();
         setPlayedList([...playedList, playerId]);
+
+        const enemiesCopy = { ...enemies };
+        // do enemy damage
+        Object.keys(enemies).forEach((id: string) => {
+          enemiesCopy[id].health -= 10;
+        });
+
+        setEnemies(enemiesCopy);
       }
     });
 

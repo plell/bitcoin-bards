@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { Mesh, Vector3 } from "three";
+import { useEffect, useRef, useState, useMemo, useLayoutEffect } from "react";
+import { Vector3 } from "three";
 
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { MOVEMENT_DAMPING, getMovement } from "../../constants";
 import HealthBar from "../UI/HealthBar";
 import useGame from "../../Stores/useGame";
+import { Players } from "../../Stores/types";
 
 type EnemyProps = {
   startPosition: Vector3;
@@ -17,16 +18,38 @@ type Interval = ReturnType<typeof setInterval>;
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
 
-const maxSpeed = 8;
-
 export const Enemy = ({
   startPosition,
   movementInterval,
   speed,
 }: EnemyProps) => {
-  const playerBodyRefs = useGame((s) => s.playerBodyRefs);
+  const players = useGame((s) => s.players);
+  const enemies = useGame((s) => s.enemies);
+  const setEnemies = useGame((s) => s.setEnemies);
+  const [id, setId] = useState(0);
+
+  const body = useRef<RapierRigidBody | null>(null);
+
+  const health = useMemo(() => {
+    const currentHealth = enemies[id]?.health || 0;
+    return currentHealth;
+  }, [enemies, id]);
 
   let interval: Interval | null = null;
+
+  useLayoutEffect(() => {
+    const id = Object.keys(enemies).length;
+    setId(id);
+    setEnemies({
+      ...enemies,
+      [id]: {
+        id,
+        body,
+        health: 100,
+        type: "enemy",
+      },
+    });
+  }, [body?.current]);
 
   useEffect(() => {
     if (interval) {
@@ -41,16 +64,11 @@ export const Enemy = ({
         clearInterval(interval);
       }
     };
-  }, [playerBodyRefs]);
-
-  const body = useRef<RapierRigidBody | null>(null);
+  }, [players]);
 
   const getClosestMeshPosition = (
     sourceRigidBody: React.MutableRefObject<RapierRigidBody | null>,
-    surroundingRigidBodies: Record<
-      string,
-      React.MutableRefObject<RapierRigidBody | null>
-    >
+    surroundingRigidBodies: Players
   ) => {
     const closest: any = {
       key: "",
@@ -59,7 +77,8 @@ export const Enemy = ({
     };
 
     Object.keys(surroundingRigidBodies).forEach((key) => {
-      const meshBodyRef = surroundingRigidBodies[key];
+      const player = surroundingRigidBodies[key];
+      const meshBodyRef = player.body;
 
       const aPosition = meshBodyRef?.current?.translation();
       const bPosition = sourceRigidBody?.current?.translation();
@@ -98,7 +117,7 @@ export const Enemy = ({
 
       const impulse = { x: 0, y: 0, z: 0 };
 
-      const destination = getClosestMeshPosition(body, playerBodyRefs);
+      const destination = getClosestMeshPosition(body, players);
 
       let goX = getMovement(destination.x, currentPosition.x);
       let goY = getMovement(destination.y, currentPosition.y);
@@ -112,20 +131,20 @@ export const Enemy = ({
 
   return (
     <>
-      <HealthBar health={80} bodyRef={body} />
+      <HealthBar health={health} bodyRef={body} />
       <RigidBody
         ref={body}
-        restitution={0.2}
+        restitution={6}
         friction={1}
-        onWake={() => {
-          console.log("wake!");
-        }}
         position={startPosition}
         canSleep={false}
         lockRotations
         colliders='ball'
         linearDamping={MOVEMENT_DAMPING}
         angularDamping={MOVEMENT_DAMPING}
+        userData={{
+          type: "enemy",
+        }}
       >
         <mesh>
           <sphereGeometry />

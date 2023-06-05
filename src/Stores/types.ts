@@ -3,9 +3,14 @@ import { RapierRigidBody } from "@react-three/rapier"
 
 export type PlayerPosition = Vector3
 
-export type playerBodyRefs = Record<string, React.MutableRefObject<RapierRigidBody | null>>
+export type Players = Record<string, Player>
 
-export type BodyRefs = Record<string, React.MutableRefObject<RapierRigidBody | null>>
+export type Player = {
+    id: string | number
+    body: React.MutableRefObject<RapierRigidBody | null>
+    health: number
+    type: string
+}
 
 export type Zone = {
     position: Vector3
