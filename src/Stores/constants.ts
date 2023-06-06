@@ -1,5 +1,5 @@
 import { Vector3 } from "three"
-import { SlideDirection, TilePosition, WorldTile,  Pattern, Players, } from "./types"
+import { Direction, TilePosition, WorldTile,  Pattern, Players, } from "./types"
 
 
 export const worldTiles: WorldTile[] = [
@@ -7,25 +7,29 @@ export const worldTiles: WorldTile[] = [
         position: {
             row: 0,
             column: 0
-        }   
+    },
+      color:'blue'
     },
     {
         position: {
             row: 0,
             column: 1
-        }   
+      },
+      color:'green'
     },
     {
         position: {
             row: 0,
             column: 2
-        }   
+      },
+      color:'yellow'
     },
     {
         position: {
             row: 0,
             column: 3
-        }   
+      },
+      color:'purple'
     }
 ]
 
@@ -89,7 +93,7 @@ export const getMovement = (from: Vector3, to: Vector3, speed = 1, ratio = 0.5) 
 
 
 type WallCheck = {
-    name: SlideDirection;
+    name: Direction;
     check: (position: TilePosition) => TilePosition;
   };
   
@@ -223,3 +227,11 @@ export const initialZones = [
       },
 ]
   
+
+// const debounce = (func, timeout = 300) => {
+//   let timer;
+//   return (...args) => {
+//     clearTimeout(timer);
+//     timer = setTimeout(() => { func.apply(this, args); }, timeout);
+//   };
+// }

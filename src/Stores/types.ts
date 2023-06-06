@@ -39,16 +39,23 @@ export type TilePosition = {
     column: number
 }
 
-export type SlideDirection = 'left' | 'right' | 'top' | 'bottom'
+export type Direction = 'left' | 'right' | 'top' | 'bottom'
 
 export type NextWorldTile = {
-    slideDirection: SlideDirection
+    slideDirection: Direction
     worldTile: WorldTile
 }
 
 export type WorldTile = {
     position: TilePosition
+    color: string
 }
 
 export type Interval = ReturnType<typeof setInterval> | null;
 export type Timeout = ReturnType<typeof setTimeout> | null;
+
+export type RigidBodyData = {
+    type: 'enemy' | 'wall' | 'portal'
+    name?: Direction
+    strength?: number
+}

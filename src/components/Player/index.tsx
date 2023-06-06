@@ -2,16 +2,20 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useKeyboardControls, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Vector3 } from "three";
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
+import { RigidBody, RapierRigidBody, vec3 } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
-import { MOVEMENT_DAMPING, getMovement, grid } from "../../Stores/constants";
+import {
+  MOVEMENT_DAMPING,
+  NeighborTiles,
+  getMovement,
+  getNeighborTiles,
+} from "../../Stores/constants";
 import useGame from "../../Stores/useGame";
 import { AttackEffect } from "./Effects/Attack";
-import { worldTiles } from "../../Stores/constants";
-import { SlideDirection } from "../../Stores/types";
+
+import { RigidBodyData, WorldTile } from "../../Stores/types";
 
 const speed = 0.2;
-const maxSpeed = 5;
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
@@ -21,7 +25,6 @@ export const Player = () => {
   const setPlayers = useGame((s) => s.setPlayers);
   const worldTile = useGame((s) => s.worldTile);
   const setNextWorldTile = useGame((s) => s.setNextWorldTile);
-  const nextWorldTile = useGame((s) => s.nextWorldTile);
 
   const playerTexture = useTexture("sprites/tomo.png");
 
@@ -36,6 +39,16 @@ export const Player = () => {
     const currentHealth = players[playerId]?.health || 0;
     return currentHealth;
   }, [players, playerId]);
+
+  useEffect(() => {
+    if (worldTile && body.current) {
+      const current = body.current.translation();
+
+      console.log("set translation!");
+
+      body.current.setTranslation(vec3({ x: 0, y: 0, z: 0 }), true);
+    }
+  }, [worldTile]);
 
   useEffect(() => {
     if (health < 0 && !players[playerId].dead) {
@@ -122,6 +135,7 @@ export const Player = () => {
 
       <RigidBody
         ref={body}
+        type='dynamic'
         lockRotations
         canSleep={false}
         restitution={0.2}
@@ -130,10 +144,24 @@ export const Player = () => {
         linearDamping={MOVEMENT_DAMPING * 3}
         angularDamping={MOVEMENT_DAMPING * 2}
         onCollisionEnter={({ other }) => {
-          const object = other.rigidBodyObject?.userData;
+          const object = other.rigidBodyObject?.userData as RigidBodyData;
           if (object?.type === "enemy") {
             const damage = object?.strength || 10;
             takeDamage(damage);
+          }
+          if (object?.type === "portal") {
+            const neighborTiles: NeighborTiles = getNeighborTiles(
+              worldTile.position
+            );
+
+            const tile: WorldTile | null = object?.name
+              ? neighborTiles[object.name]
+              : null;
+
+            if (tile && body?.current) {
+              // body.current.lockTranslations(true, true);
+              setNextWorldTile(tile);
+            }
           }
         }}
         userData={{

@@ -5,6 +5,7 @@ import useGame from "../../Stores/useGame";
 export const Terrain = () => {
   const zones = useGame((s) => s.zones);
 
+  const worldTile = useGame((s) => s.worldTile);
   const setAttack = useGame((s) => s.setAttack);
   const attack = useGame((s) => s.attack);
 
@@ -20,17 +21,17 @@ export const Terrain = () => {
         rotation-z={Math.PI}
       >
         <planeGeometry args={[grid.width, grid.height]} />
-        <meshStandardMaterial color={"white"} />
+        <meshStandardMaterial color={worldTile.color || "white"} />
       </mesh>
 
-      {zones.map((z, i) => {
+      {/* {zones.map((z, i) => {
         return (
           <mesh key={`zones-${i}`} position={z.position}>
             <planeGeometry args={[z.width, z.height]} />
             <meshStandardMaterial color={z.color} transparent opacity={0.4} />
           </mesh>
         );
-      })}
+      })} */}
     </>
   );
 };

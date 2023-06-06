@@ -52,25 +52,24 @@ export const Boundaries = () => {
 
   return (
     <>
-      {walls
-        .filter((f) => !openPaths[f.name])
-        .map((w, i) => {
-          return (
-            <RigidBody
-              key={`wall-${i}`}
-              type='fixed'
-              restitution={0.5}
-              friction={1}
-              position={w.pos}
-              userData={{ type: "wall", direction: w.name }}
-            >
-              <mesh>
-                <boxGeometry args={w.args} />
-                <meshStandardMaterial transparent opacity={0} />
-              </mesh>
-            </RigidBody>
-          );
-        })}
+      {walls.map((w, i) => {
+        const isPortal = !!openPaths[w.name];
+        return (
+          <RigidBody
+            key={`wall-${i}`}
+            type='fixed'
+            restitution={20}
+            friction={0}
+            position={w.pos}
+            userData={{ type: isPortal ? "portal" : "wall", name: w.name }}
+          >
+            <mesh>
+              <boxGeometry args={w.args} />
+              <meshStandardMaterial transparent opacity={0} />
+            </mesh>
+          </RigidBody>
+        );
+      })}
     </>
   );
 };
