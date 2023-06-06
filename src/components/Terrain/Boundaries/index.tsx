@@ -1,10 +1,12 @@
 import { Vector3 } from "three";
-import { grid } from "../../../constants";
+import {
+  NeighborTiles,
+  getNeighborTiles,
+  grid,
+} from "../../../Stores/constants";
 import { RigidBody } from "@react-three/rapier";
 import useGame from "../../../Stores/useGame";
-import { worldTiles } from "../../../Stores/constants";
 import { useMemo } from "react";
-import { SlideDirection, TilePosition } from "../../../Stores/types";
 
 type Wall = {
   pos: Vector3;
@@ -16,93 +18,42 @@ type Wall = {
     heightSegments?: number | undefined,
     depthSegments?: number | undefined
   ];
-  direction: "top" | "bottom" | "left" | "right";
+  name: "top" | "bottom" | "left" | "right";
 };
 const walls: Wall[] = [
   {
     pos: new Vector3(grid.x, grid.top, grid.z),
     args: [grid.width, 4, 5],
-    direction: "top",
+    name: "top",
   },
   {
     pos: new Vector3(grid.x, grid.bottom, grid.z),
     args: [grid.width, 4, 5],
-    direction: "bottom",
+    name: "bottom",
   },
   {
     pos: new Vector3(grid.left, grid.y, grid.z),
     args: [4, grid.height, 5],
-    direction: "left",
+    name: "left",
   },
   {
     pos: new Vector3(grid.right, grid.y, grid.z),
     args: [4, grid.height, 5],
-    direction: "right",
-  },
-];
-
-type WallCheck = {
-  name: SlideDirection;
-  check: (position: TilePosition) => TilePosition;
-};
-
-const directionsCheck: WallCheck[] = [
-  {
     name: "right",
-    check: (position: TilePosition) => ({
-      ...position,
-      column: position.column + 1,
-    }),
-  },
-  {
-    name: "left",
-    check: (position: TilePosition) => ({
-      ...position,
-      column: position.column - 1,
-    }),
-  },
-  {
-    name: "top",
-    check: (position: TilePosition) => ({
-      ...position,
-      row: position.row - 1,
-    }),
-  },
-  {
-    name: "bottom",
-    check: (position: TilePosition) => ({
-      ...position,
-      row: position.row + 1,
-    }),
   },
 ];
 
 export const Boundaries = () => {
   const worldTile = useGame((s) => s.worldTile);
 
-  const blockedPaths: SlideDirection[] = useMemo(() => {
-    const blocked: SlideDirection[] = [];
-
-    directionsCheck.forEach((d) => {
-      const { position } = worldTile;
-      const { row, column } = d.check(position);
-
-      const tileFound = worldTiles.find(
-        (f) => f.position.row === row && f.position.column === column
-      );
-
-      if (!tileFound) {
-        blocked.push(d.name);
-      }
-    });
-
-    return blocked;
+  const openPaths: NeighborTiles = useMemo(() => {
+    return getNeighborTiles(worldTile.position);
   }, [worldTile]);
 
   return (
     <>
       {walls
-        .filter((f) => blockedPaths.includes(f.direction))
+        .filter((f) => !openPaths[f.name])
         .map((w, i) => {
           return (
             <RigidBody
@@ -111,7 +62,7 @@ export const Boundaries = () => {
               restitution={0.5}
               friction={1}
               position={w.pos}
-              userData={{ type: "wall", direction: w.direction }}
+              userData={{ type: "wall", direction: w.name }}
             >
               <mesh>
                 <boxGeometry args={w.args} />

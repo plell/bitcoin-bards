@@ -1,4 +1,4 @@
-import { grid } from "../../constants";
+import { grid } from "../../Stores/constants";
 import { Boundaries } from "./Boundaries";
 import useGame from "../../Stores/useGame";
 

@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Mesh } from "three";
 import { playSound } from "../Tone";
-import { grid } from "../../../constants";
+import { grid } from "../../../Stores/constants";
 import useGame from "../../../Stores/useGame";
 
 const speed = 50;

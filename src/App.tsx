@@ -5,7 +5,7 @@ import { Lights } from "./components/Lights";
 import { Player } from "./components/Player";
 import { Terrain } from "./components/Terrain";
 import { KeyboardControls } from "@react-three/drei";
-import { controls } from "./constants";
+import { controls } from "./Stores/constants";
 import { Loop } from "./components/Sounds/Loop";
 import { Enemy } from "./components/Enemy";
 import { Physics } from "@react-three/rapier";
@@ -14,6 +14,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Interval } from "./Stores/types";
 import { v4 as uuidv4 } from "uuid";
 import { Group } from "three";
+import { LevelManager } from "./components/LevelManager";
 
 let enemyGeneratorTimeout: Interval = null;
 
@@ -79,6 +80,8 @@ function App() {
         {/* <OrbitControls /> */}
         <Perf position='top-left' />
         <Lights />
+
+        <LevelManager />
 
         <Physics gravity={[0, 0, 0]}>
           <Player />

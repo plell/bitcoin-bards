@@ -1,6 +1,159 @@
-import { Vector3 } from "three";
-import { gridLeft, zoneHeight, zoneWidth, zoneZ } from "../constants";
-import { Pattern, Players, WorldTile } from "./types"
+import { Vector3 } from "three"
+import { SlideDirection, TilePosition, WorldTile,  Pattern, Players, } from "./types"
+
+
+export const worldTiles: WorldTile[] = [
+    {
+        position: {
+            row: 0,
+            column: 0
+        }   
+    },
+    {
+        position: {
+            row: 0,
+            column: 1
+        }   
+    },
+    {
+        position: {
+            row: 0,
+            column: 2
+        }   
+    },
+    {
+        position: {
+            row: 0,
+            column: 3
+        }   
+    }
+]
+
+export const controls = [
+    {
+        name: 'up',
+        keys: ['ArrowUp', 'KeyW']
+    },
+    {
+        name: 'down',
+        keys: ['ArrowDown', 'KeyS']
+    },
+    {
+        name: 'left',
+        keys: ['ArrowLeft', 'KeyA']
+    },
+    {
+        name: 'right',
+        keys: ['ArrowRight', 'KeyD']
+    }
+]
+
+const gridX = 0
+const gridY = 0
+const gridZ = -1
+const gridWidth = 60
+const gridHeight = 40
+
+export const grid = {
+    x: gridX,
+    y: gridY,
+    z: gridZ,
+    width: gridWidth,
+    height: gridHeight,
+    left: gridX - gridWidth/2,
+    right:gridX + gridWidth/2,
+    top: gridY + gridHeight/2,
+    bottom: gridY - gridHeight/2,
+}
+
+
+export const MOVEMENT_DAMPING = 5
+
+const reuseableVector3 = new Vector3()
+
+export const getMovement = (from: Vector3, to: Vector3, speed = 1, ratio = 0.5) => {
+    let amp = 3
+    const distance = from.distanceTo(to)
+    
+    if (distance < 10) {
+        amp = 4
+    }
+
+    const x =  (to.x - from.x) * ratio
+    const y =  (to.y - from.y) * ratio
+    const z = from.z
+
+  return reuseableVector3.set(x*speed*amp,y*speed*amp,z);
+}
+
+
+
+type WallCheck = {
+    name: SlideDirection;
+    check: (position: TilePosition) => TilePosition;
+  };
+  
+  const directionsCheck: WallCheck[] = [
+    {
+      name: "right",
+      check: (position: TilePosition) => ({
+        ...position,
+        column: position.column + 1,
+      }),
+    },
+    {
+      name: "left",
+      check: (position: TilePosition) => ({
+        ...position,
+        column: position.column - 1,
+      }),
+    },
+    {
+      name: "top",
+      check: (position: TilePosition) => ({
+        ...position,
+        row: position.row - 1,
+      }),
+    },
+    {
+      name: "bottom",
+      check: (position: TilePosition) => ({
+        ...position,
+        row: position.row + 1,
+      }),
+    },
+  ];
+
+export type NeighborTiles = {
+    top: WorldTile | null
+    right: WorldTile | null
+    left: WorldTile | null
+    bottom: WorldTile | null
+}
+
+export const getNeighborTiles = (worldTilePosition: TilePosition) => {
+    const neighborTiles: NeighborTiles = {
+        'top': null,
+        'right': null,
+        'left': null,
+        'bottom': null, 
+    }
+    
+    directionsCheck.forEach((d) => {
+        const { row, column } = d.check(worldTilePosition);
+  
+        const tileFound = worldTiles.find(
+          (f) => f.position.row === row && f.position.column === column
+        );
+  
+        if (tileFound) {
+            neighborTiles[d.name] = tileFound
+        }
+    });
+    
+    return neighborTiles
+}
+  
 
 export const pattern: Pattern = {
     stepCount: 10,
@@ -33,32 +186,36 @@ export const pattern: Pattern = {
 
 export const initialEnemyState: Players = {};
 
+export const zoneWidth = grid.width / 4
+export const zoneHeight = grid.height
+export const zoneZ = -0.5
 
+const zoneLeft = grid.left + zoneWidth/2
 
 export const initialZones = [
     {
-      position: new Vector3(gridLeft, 0, zoneZ),
+      position: new Vector3(zoneLeft, 0, zoneZ),
       width: zoneWidth,
       height: zoneHeight,
       color: "red",
       value: 2,
     },
     {
-      position: new Vector3(gridLeft+zoneWidth, 0, zoneZ),
+      position: new Vector3(zoneLeft+zoneWidth, 0, zoneZ),
       width: zoneWidth,
       height: zoneHeight,
       color: "blue",
       value: 3,
     },
     {
-      position: new Vector3(gridLeft+zoneWidth*2, 0, zoneZ),
+      position: new Vector3(zoneLeft+zoneWidth*2, 0, zoneZ),
       width: zoneWidth,
       height: zoneHeight,
       color: "teal",
       value: 4,
     },
     {
-        position: new Vector3(gridLeft+zoneWidth*3, 0, zoneZ),
+        position: new Vector3(zoneLeft+zoneWidth*3, 0, zoneZ),
         width: zoneWidth,
         height: zoneHeight,
         color: "lime",
@@ -66,29 +223,3 @@ export const initialZones = [
       },
 ]
   
-export const worldTiles: WorldTile[] = [
-    {
-        position: {
-            row: 0,
-            column: 0
-        }   
-    },
-    {
-        position: {
-            row: 0,
-            column: 1
-        }   
-    },
-    {
-        position: {
-            row: 0,
-            column: 2
-        }   
-    },
-    {
-        position: {
-            row: 0,
-            column: 3
-        }   
-    }
-]

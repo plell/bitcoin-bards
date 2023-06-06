@@ -4,7 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Vector3 } from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
-import { MOVEMENT_DAMPING, getMovement, grid } from "../../constants";
+import { MOVEMENT_DAMPING, getMovement, grid } from "../../Stores/constants";
 import useGame from "../../Stores/useGame";
 import { AttackEffect } from "./Effects/Attack";
 import { worldTiles } from "../../Stores/constants";
@@ -75,55 +75,6 @@ export const Player = () => {
     };
   }, []);
 
-  const doBoundaryCheck = (pos: Vector3) => {
-    // in transition
-    if (nextWorldTile) {
-      return;
-    }
-
-    let direction: SlideDirection | null = null;
-
-    if (pos.x > grid.right) {
-      direction = "right";
-    } else if (pos.x < grid.left) {
-      direction = "left";
-    } else if (pos.y > grid.top) {
-      direction = "top";
-    } else if (pos.y < grid.bottom) {
-      direction = "bottom";
-    }
-
-    if (!direction) {
-      return;
-    }
-
-    let { row, column } = worldTile.position;
-
-    switch (direction) {
-      case "left":
-        row -= 1;
-        break;
-      case "right":
-        row += 1;
-        break;
-      case "top":
-        column -= 1;
-        break;
-      case "bottom":
-        column += 1;
-        break;
-      default:
-    }
-
-    const nextTile = worldTiles.find(
-      (f) => f.position.column === column && f.position.row === row
-    );
-
-    if (!!nextTile && direction) {
-      setNextWorldTile(nextTile);
-    }
-  };
-
   useFrame(({ mouse }) => {
     if (body.current) {
       const x = (mouse.x * viewport.width) / 2;
@@ -137,9 +88,6 @@ export const Player = () => {
         currentTranslation.z
       );
 
-      // boundary check
-      doBoundaryCheck(currentPosition);
-
       if (group?.current) {
         group?.current.position.copy(currentPosition);
       }
@@ -148,18 +96,10 @@ export const Player = () => {
 
       const impulse = { x: 0, y: 0, z: 0 };
 
-      let goX = getMovement(mousePosition.x, currentPosition.x);
-      let goY = getMovement(mousePosition.y, currentPosition.y);
+      let movement = getMovement(currentPosition, mousePosition, speed);
 
-      impulse.x = goX * speed;
-      impulse.y = goY * speed;
-
-      if (Math.abs(impulse.x) > maxSpeed) {
-        impulse.x = maxSpeed;
-      }
-      if (Math.abs(impulse.y) > maxSpeed) {
-        impulse.y = maxSpeed;
-      }
+      impulse.x = movement.x;
+      impulse.y = movement.y;
 
       body.current.applyImpulse(impulse, true);
     }

@@ -1,6 +1,6 @@
 import create from 'zustand'
 import { Players, Pattern, Zone, WorldTile, WorldTileRef } from './types'
-import { pattern, initialEnemyState, initialZones, worldTiles, } from './constants'
+import { pattern, initialEnemyState, initialZones, worldTiles } from './constants'
 
 type GameState = {
     attack: boolean
