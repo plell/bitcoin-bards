@@ -4,9 +4,11 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Vector3 } from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
-import { MOVEMENT_DAMPING, getMovement } from "../../constants";
+import { MOVEMENT_DAMPING, getMovement, grid } from "../../constants";
 import useGame from "../../Stores/useGame";
 import { AttackEffect } from "./Effects/Attack";
+import { worldTiles } from "../../Stores/constants";
+import { SlideDirection } from "../../Stores/types";
 
 const speed = 0.2;
 const maxSpeed = 5;
@@ -17,6 +19,9 @@ const reuseableVector3b = new Vector3();
 export const Player = () => {
   const players = useGame((s) => s.players);
   const setPlayers = useGame((s) => s.setPlayers);
+  const worldTile = useGame((s) => s.worldTile);
+  const setNextWorldTile = useGame((s) => s.setNextWorldTile);
+  const nextWorldTile = useGame((s) => s.nextWorldTile);
 
   const playerTexture = useTexture("sprites/tomo.png");
 
@@ -70,6 +75,55 @@ export const Player = () => {
     };
   }, []);
 
+  const doBoundaryCheck = (pos: Vector3) => {
+    // in transition
+    if (nextWorldTile) {
+      return;
+    }
+
+    let direction: SlideDirection | null = null;
+
+    if (pos.x > grid.right) {
+      direction = "right";
+    } else if (pos.x < grid.left) {
+      direction = "left";
+    } else if (pos.y > grid.top) {
+      direction = "top";
+    } else if (pos.y < grid.bottom) {
+      direction = "bottom";
+    }
+
+    if (!direction) {
+      return;
+    }
+
+    let { row, column } = worldTile.position;
+
+    switch (direction) {
+      case "left":
+        row -= 1;
+        break;
+      case "right":
+        row += 1;
+        break;
+      case "top":
+        column -= 1;
+        break;
+      case "bottom":
+        column += 1;
+        break;
+      default:
+    }
+
+    const nextTile = worldTiles.find(
+      (f) => f.position.column === column && f.position.row === row
+    );
+
+    if (!!nextTile && direction) {
+      setNextWorldTile(nextTile);
+    }
+  };
+
   useFrame(({ mouse }) => {
     if (body.current) {
       const x = (mouse.x * viewport.width) / 2;
@@ -82,6 +136,9 @@ export const Player = () => {
         currentTranslation.y,
         currentTranslation.z
       );
+
+      // boundary check
+      doBoundaryCheck(currentPosition);
 
       if (group?.current) {
         group?.current.position.copy(currentPosition);
@@ -129,11 +186,13 @@ export const Player = () => {
         canSleep={false}
         restitution={0.2}
         friction={1}
+        colliders={"ball"}
         linearDamping={MOVEMENT_DAMPING * 3}
         angularDamping={MOVEMENT_DAMPING * 2}
         onCollisionEnter={({ other }) => {
-          if (other.rigidBodyObject?.userData?.type === "enemy") {
-            const damage = other.rigidBodyObject?.userData?.strength || 10;
+          const object = other.rigidBodyObject?.userData;
+          if (object?.type === "enemy") {
+            const damage = object?.strength || 10;
             takeDamage(damage);
           }
         }}
@@ -142,7 +201,7 @@ export const Player = () => {
         }}
       >
         <mesh>
-          <boxGeometry />
+          <planeGeometry />
           <meshStandardMaterial transparent map={playerTexture} />
         </mesh>
       </RigidBody>

@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 import { gridLeft, zoneHeight, zoneWidth, zoneZ } from "../constants";
-import { Pattern, Players } from "./types"
+import { Pattern, Players, WorldTile } from "./types"
 
 export const pattern: Pattern = {
     stepCount: 10,
@@ -34,6 +34,7 @@ export const pattern: Pattern = {
 export const initialEnemyState: Players = {};
 
 
+
 export const initialZones = [
     {
       position: new Vector3(gridLeft, 0, zoneZ),
@@ -63,4 +64,31 @@ export const initialZones = [
         color: "lime",
         value: 8,
       },
-  ]
+]
+  
+export const worldTiles: WorldTile[] = [
+    {
+        position: {
+            row: 0,
+            column: 0
+        }   
+    },
+    {
+        position: {
+            row: 0,
+            column: 1
+        }   
+    },
+    {
+        position: {
+            row: 0,
+            column: 2
+        }   
+    },
+    {
+        position: {
+            row: 0,
+            column: 3
+        }   
+    }
+]

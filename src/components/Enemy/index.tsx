@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo, useLayoutEffect } from "react";
+import { useEffect, useRef, useMemo, useLayoutEffect } from "react";
 import { Group, Vector3 } from "three";
 
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
@@ -15,7 +15,7 @@ const reuseableVector3b = new Vector3();
 const reuseableVector3c = new Vector3();
 
 const movementInterval = 600;
-const speed = 5;
+const speed = 2;
 
 const padding = 1;
 const getEnemyStartPosition = () => {
@@ -29,7 +29,7 @@ const getEnemyStartPosition = () => {
       : grid.height / 2 - padding;
 
   const side = Math.random() - 0.5;
-  if (side < 0) {
+  if (side < 1) {
     x = Math.random() * grid.width - grid.width / 2;
   } else {
     y = Math.random() * grid.height - grid.height / 2;
@@ -58,7 +58,7 @@ export const Enemy = (props: Player) => {
   }, []);
 
   useEffect(() => {
-    if (health < 0 && !enemies[props.id].dead) {
+    if (health < 1 && !enemies[props.id].dead) {
       const enemiesCopy = { ...enemies };
       enemiesCopy[props.id].dead = true;
       setEnemies(enemiesCopy);

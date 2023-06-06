@@ -1,9 +1,11 @@
-import { Vector3 } from "three"
+import { Group, Vector3 } from "three"
 import { RapierRigidBody } from "@react-three/rapier"
 
 export type PlayerPosition = Vector3
 
 export type Players = Record<string, Player>
+
+export type WorldTileRef = React.MutableRefObject<Group | null> | null
 
 export type Player = {
     id: string | number
@@ -30,6 +32,22 @@ export type Note = {
 export type Pattern = {
     stepCount: number
     notes: Note[]
+}
+
+export type TilePosition = {
+    row: number
+    column: number
+}
+
+export type SlideDirection = 'left' | 'right' | 'top' | 'bottom'
+
+export type NextWorldTile = {
+    slideDirection: SlideDirection
+    worldTile: WorldTile
+}
+
+export type WorldTile = {
+    position: TilePosition
 }
 
 export type Interval = ReturnType<typeof setInterval> | null;

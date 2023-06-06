@@ -1,6 +1,6 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
-import { OrthographicCamera } from "@react-three/drei";
+import { OrbitControls, OrthographicCamera } from "@react-three/drei";
 import { Lights } from "./components/Lights";
 import { Player } from "./components/Player";
 import { Terrain } from "./components/Terrain";
@@ -10,17 +10,29 @@ import { Loop } from "./components/Sounds/Loop";
 import { Enemy } from "./components/Enemy";
 import { Physics } from "@react-three/rapier";
 import useGame from "./Stores/useGame";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Interval } from "./Stores/types";
 import { v4 as uuidv4 } from "uuid";
+import { Group } from "three";
 
 let enemyGeneratorTimeout: Interval = null;
+
 const generatorSpeed = 2000;
 
 function App() {
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
+  const setWorldTileRef = useGame((s) => s.setWorldTileRef);
+
+  const worldTileRef = useRef<Group | null>(null);
+
   const [tick, setTick] = useState(false);
+
+  useLayoutEffect(() => {
+    if (worldTileRef.current) {
+      setWorldTileRef(worldTileRef);
+    }
+  }, [worldTileRef.current]);
 
   useEffect(() => {
     if (enemyGeneratorTimeout) {
@@ -30,6 +42,10 @@ function App() {
     enemyGeneratorTimeout = setInterval(() => {
       setTick((tick) => !tick);
     }, generatorSpeed);
+
+    return function cleanup() {
+      setEnemies({});
+    };
   }, []);
 
   useEffect(() => {
@@ -65,24 +81,25 @@ function App() {
         <Lights />
 
         <Physics gravity={[0, 0, 0]}>
-          <Loop />
-          <Terrain />
-
           <Player />
+          <group ref={worldTileRef}>
+            <Loop />
+            <Terrain />
 
-          {/* {Object.values(players).map((p, i) => {
+            {/* {Object.values(players).map((p, i) => {
             if (p.dead) {
               return null;
             }
             return <RemotePlayer key={`remore-player-${i}`} {...p} />;
           })} */}
 
-          {Object.values(enemies).map((e, i) => {
-            if (e.dead) {
-              return null;
-            }
-            return <Enemy key={`enemy-${i}`} {...e} />;
-          })}
+            {Object.values(enemies).map((e, i) => {
+              if (e.dead) {
+                return null;
+              }
+              return <Enemy key={`enemy-${i}`} {...e} />;
+            })}
+          </group>
         </Physics>
       </Canvas>
     </KeyboardControls>

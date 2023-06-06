@@ -13,7 +13,7 @@ export const Terrain = () => {
       <Boundaries />
 
       <mesh
-        onClick={() => {
+        onPointerDown={() => {
           setAttack(!attack);
         }}
         position={[grid.x, grid.y, grid.z]}

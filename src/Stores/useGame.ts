@@ -1,6 +1,6 @@
 import create from 'zustand'
-import { Players, Pattern, Zone } from './types'
-import { pattern, initialEnemyState, initialZones } from './constants'
+import { Players, Pattern, Zone, WorldTile, WorldTileRef } from './types'
+import { pattern, initialEnemyState, initialZones, worldTiles, } from './constants'
 
 type GameState = {
     attack: boolean
@@ -8,11 +8,17 @@ type GameState = {
     enemies: Players
     zones: Zone[]
     loopPattern: Pattern
+    worldTile: WorldTile
+    worldTileRef: WorldTileRef
+    nextWorldTile: WorldTile | null
     setAttack: (attack: boolean) => void
     setPlayers: (players: Players) => void
     setEnemies: (enemies: Players) => void
     setZones: (zones: Zone[]) => void
     setLoopPattern: (loopPattern: Pattern) => void
+    setWorldTile: (worldTile: WorldTile) => void
+    setNextWorldTile: (nextWorldTile: WorldTile | null) => void
+    setWorldTileRef: (worldTileRef: WorldTileRef) => void
 }
 
 export default create<GameState>((set, get) => ({
@@ -21,9 +27,16 @@ export default create<GameState>((set, get) => ({
     enemies: initialEnemyState,
     zones: initialZones,
     loopPattern: pattern,
+    worldTile: worldTiles[0],
+    worldTileRef: null,
+    nextWorldTile: null,
     setAttack: (attack) => set({ attack }),
     setPlayers: (players) => set({ players }),
     setEnemies: (enemies) => set({ enemies }),
     setZones: (zones) => set({ zones }),
-    setLoopPattern: (loopPattern) =>  set({ loopPattern }),
+    setLoopPattern: (loopPattern) => set({ loopPattern }),
+    setWorldTile: (worldTile) => set({ worldTile }),
+    setNextWorldTile: (nextWorldTile) => set({ nextWorldTile }),
+    setWorldTileRef: (worldTileRef) => set({ worldTileRef }),
+    
 }))
