@@ -5,7 +5,7 @@ import {
   grid,
   postDebounce,
 } from "../../../Stores/constants";
-import { CuboidCollider } from "@react-three/rapier";
+import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import useGame from "../../../Stores/useGame";
 import { useMemo } from "react";
 import { Direction, RigidBodyData, WorldTile } from "../../../Stores/types";
@@ -16,7 +16,7 @@ type Wall = {
   name: "top" | "bottom" | "left" | "right";
 };
 
-const wallWidth = 2;
+const wallWidth = 8;
 const walls: Wall[] = [
   {
     pos: new Vector3(grid.x, grid.top + wallWidth, grid.z),
