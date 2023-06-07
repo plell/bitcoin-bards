@@ -9,9 +9,11 @@ export const LevelManager = () => {
 
   useEffect(() => {
     if (nextWorldTile?.worldTile) {
-      setWorldTile(nextWorldTile.worldTile);
-      setNextWorldTile(null);
       setEnemies({});
+      setTimeout(() => {
+        setWorldTile(nextWorldTile.worldTile);
+        setNextWorldTile(null);
+      }, 50);
     }
   }, [nextWorldTile]);
 

@@ -27,7 +27,7 @@ export default create<GameState>((set, get) => ({
     enemies: initialEnemyState,
     zones: initialZones,
     loopPattern: pattern,
-    worldTile: worldTiles[0],
+    worldTile: worldTiles[worldTiles.length / 2],
     worldTileRef: null,
     nextWorldTile: null,
     setAttack: (attack) => set({ attack }),

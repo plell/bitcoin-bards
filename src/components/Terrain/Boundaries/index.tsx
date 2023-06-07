@@ -5,7 +5,7 @@ import {
   grid,
   postDebounce,
 } from "../../../Stores/constants";
-import { RigidBody, CuboidCollider } from "@react-three/rapier";
+import { CuboidCollider } from "@react-three/rapier";
 import useGame from "../../../Stores/useGame";
 import { useMemo } from "react";
 import { Direction, RigidBodyData, WorldTile } from "../../../Stores/types";

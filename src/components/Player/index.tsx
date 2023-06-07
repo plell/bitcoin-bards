@@ -8,21 +8,19 @@ import {
 } from "react";
 import { useKeyboardControls, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Group, Vector3 } from "three";
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
+import { Group, Vector, Vector3 } from "three";
+import { RigidBody, RapierRigidBody, vec3 } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
 import {
   MOVEMENT_DAMPING,
-  NeighborTiles,
   getMovement,
-  getNeighborTiles,
   grid,
   postDebounce,
 } from "../../Stores/constants";
 import useGame from "../../Stores/useGame";
 import { AttackEffect } from "./Effects/Attack";
 
-import { RigidBodyData, WorldTile } from "../../Stores/types";
+import { RigidBodyData } from "../../Stores/types";
 
 const speed = 0.2;
 
@@ -55,32 +53,34 @@ export const Player = () => {
     return currentHealth;
   }, [players, playerId]);
 
-  useEffect(() => {
+  const teleport = () => {
     if (nextWorldTile && body.current) {
       let { x, y, z } = body.current.translation();
       const { relativeDirection } = nextWorldTile;
 
+      const pad = 5;
+
       switch (relativeDirection) {
         case "top":
-          y = grid.bottom;
+          y = grid.bottom + pad;
           break;
         case "bottom":
-          y = grid.top;
+          y = grid.top - pad;
           break;
         case "left":
-          x = grid.right;
+          x = grid.right - pad;
           break;
         case "right":
-          x = grid.left;
+          x = grid.left + pad;
           break;
         default:
       }
 
-      body.current.setTranslation({ x, y, z }, true);
       body.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
       body.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      body.current.setTranslation({ x, y, z }, true);
     }
-  }, [nextWorldTile]);
+  };
 
   useEffect(() => {
     if (health < 0 && !players[playerId].dead) {
@@ -121,7 +121,9 @@ export const Player = () => {
   }, []);
 
   useFrame(({ mouse }) => {
-    if (!pause && body.current) {
+    if (nextWorldTile) {
+      teleport();
+    } else if (!pause && body.current) {
       const x = (mouse.x * viewport.width) / 2;
       const y = (mouse.y * viewport.height) / 2;
 
@@ -133,10 +135,6 @@ export const Player = () => {
         currentTranslation.z
       );
 
-      if (group?.current) {
-        group?.current.position.copy(currentPosition);
-      }
-
       const mousePosition = reuseableVector3b.set(x, y, currentTranslation.z);
 
       const impulse = { x: 0, y: 0, z: 0 };
@@ -147,6 +145,10 @@ export const Player = () => {
       impulse.y = movement.y;
 
       body.current.applyImpulse(impulse, true);
+
+      if (group?.current) {
+        group?.current.position.copy(currentPosition);
+      }
     }
   });
 
@@ -168,6 +170,7 @@ export const Player = () => {
       <RigidBody
         ref={body}
         type='dynamic'
+        position={[0, 0, 0]}
         lockRotations
         canSleep={false}
         restitution={0.2}
@@ -187,7 +190,13 @@ export const Player = () => {
           name: "p1",
         }}
       >
-        <mesh>
+        <mesh
+          onClick={() => {
+            if (body.current) {
+              body.current.setTranslation({ x: 10, y: 10, z: 0 }, true);
+            }
+          }}
+        >
           <planeGeometry />
           <meshStandardMaterial transparent map={playerTexture} />
         </mesh>

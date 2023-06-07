@@ -78,7 +78,7 @@ function App() {
           zoom={14} // Zoom level (1 is default, higher values zoom out)
         />
         {/* <OrbitControls /> */}
-        <Perf position='top-left' />
+        {/* <Perf position='top-left' /> */}
         <Lights />
 
         <LevelManager />

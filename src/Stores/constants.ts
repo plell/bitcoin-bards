@@ -1,37 +1,40 @@
 import { Vector3 } from "three"
 import { Direction, TilePosition, WorldTile,  Pattern, Players, } from "./types"
 
+function generateWorld() {
+  const totalTiles = 200
+  const columnLimit = 15
+  
+  const tiles: WorldTile[] = []
+  
+  let row = 0
+  let column = 0
+  
+  for (let i = 0; i < totalTiles; i += 1){
+    var randomColor = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+      
+    tiles.push({
+          position: {
+              row,
+              column
+          },
+          color: randomColor
+    }) 
 
-export const worldTiles: WorldTile[] = [
-    {
-        position: {
-            row: 0,
-            column: 0
-    },
-      color:'blue'
-    },
-    {
-        position: {
-            row: 0,
-            column: 1
-      },
-      color:'green'
-    },
-    {
-        position: {
-            row: 0,
-            column: 2
-      },
-      color:'yellow'
-    },
-    {
-        position: {
-            row: 0,
-            column: 3
-      },
-      color:'purple'
+    column += 1 
+    
+    if (column > columnLimit) {
+      row += 1
+      column = 0
     }
-]
+  }
+
+  console.log('tiles',tiles)
+
+  return tiles
+}
+
+export const worldTiles = generateWorld()
 
 export const controls = [
     {
