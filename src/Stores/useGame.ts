@@ -1,5 +1,5 @@
 import create from 'zustand'
-import { Players, Pattern, Zone, WorldTile, WorldTileRef } from './types'
+import { Players, Pattern, Zone, WorldTile, WorldTileRef, NextWorldTile } from './types'
 import { pattern, initialEnemyState, initialZones, worldTiles } from './constants'
 
 type GameState = {
@@ -10,14 +10,14 @@ type GameState = {
     loopPattern: Pattern
     worldTile: WorldTile
     worldTileRef: WorldTileRef
-    nextWorldTile: WorldTile | null
+    nextWorldTile: NextWorldTile | null
     setAttack: (attack: boolean) => void
     setPlayers: (players: Players) => void
     setEnemies: (enemies: Players) => void
     setZones: (zones: Zone[]) => void
     setLoopPattern: (loopPattern: Pattern) => void
     setWorldTile: (worldTile: WorldTile) => void
-    setNextWorldTile: (nextWorldTile: WorldTile | null) => void
+    setNextWorldTile: (nextWorldTile: NextWorldTile | null) => void
     setWorldTileRef: (worldTileRef: WorldTileRef) => void
 }
 

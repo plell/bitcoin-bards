@@ -226,12 +226,24 @@ export const initialZones = [
         value: 8,
       },
 ]
-  
 
-// const debounce = (func, timeout = 300) => {
-//   let timer;
-//   return (...args) => {
-//     clearTimeout(timer);
-//     timer = setTimeout(() => { func.apply(this, args); }, timeout);
-//   };
-// }
+export const debounce = (fn: Function, ms = 300) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
+};
+
+let bufferTimeout: ReturnType<typeof setTimeout>|null = null;
+export const postDebounce = (fn: Function, ms = 300) => {
+  if (!bufferTimeout) {
+    fn()
+    bufferTimeout = setTimeout(() => {
+      if (bufferTimeout) {
+        clearTimeout(bufferTimeout)   
+        bufferTimeout = null
+      }
+    }, ms)
+  }
+};

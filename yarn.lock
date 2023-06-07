@@ -560,9 +560,9 @@
     zustand "^3.7.1"
 
 "@react-three/rapier@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@react-three/rapier/-/rapier-1.0.0.tgz#0026df6eed722e6fab17fa7bd789031e848c1726"
-  integrity sha512-ogrd9XAwW9G5X+H3HAkpT0DPzZ6ZlIcQP2ipO3gumYFDqzO32pB31Pi7P67horFk0ZUhz5lRcrUwX0+9b//hnA==
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@react-three/rapier/-/rapier-1.0.1.tgz#b5734fc9929a26cffa30759d270af83f9fc8dced"
+  integrity sha512-Ym9s2rHs8nN+ublf93ZRKqaOt6Za6J8Ec/FlDS8TCvo/b7+aZx4lFIoW0Wy+Vg2PQJQu0zEU6vYCbfDDvW8HFg==
   dependencies:
     "@dimforge/rapier3d-compat" "0.11.2"
     three-stdlib "2.21.6"

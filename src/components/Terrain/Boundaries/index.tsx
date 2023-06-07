@@ -3,73 +3,90 @@ import {
   NeighborTiles,
   getNeighborTiles,
   grid,
+  postDebounce,
 } from "../../../Stores/constants";
-import { RigidBody } from "@react-three/rapier";
+import { CuboidCollider } from "@react-three/rapier";
 import useGame from "../../../Stores/useGame";
 import { useMemo } from "react";
+import { Direction, RigidBodyData, WorldTile } from "../../../Stores/types";
 
 type Wall = {
   pos: Vector3;
-  args: [
-    width?: number | undefined,
-    height?: number | undefined,
-    depth?: number | undefined,
-    widthSegments?: number | undefined,
-    heightSegments?: number | undefined,
-    depthSegments?: number | undefined
-  ];
+  args: [width: number, height: number, depth: number];
   name: "top" | "bottom" | "left" | "right";
 };
+
+const wallWidth = 2;
 const walls: Wall[] = [
   {
-    pos: new Vector3(grid.x, grid.top, grid.z),
-    args: [grid.width, 4, 5],
+    pos: new Vector3(grid.x, grid.top + wallWidth, grid.z),
+    args: [grid.width, wallWidth, 5],
     name: "top",
   },
   {
-    pos: new Vector3(grid.x, grid.bottom, grid.z),
-    args: [grid.width, 4, 5],
+    pos: new Vector3(grid.x, grid.bottom - wallWidth, grid.z),
+    args: [grid.width, wallWidth, 5],
     name: "bottom",
   },
   {
-    pos: new Vector3(grid.left, grid.y, grid.z),
-    args: [4, grid.height, 5],
+    pos: new Vector3(grid.left - wallWidth, grid.y, grid.z),
+    args: [wallWidth, grid.height, 5],
     name: "left",
   },
   {
-    pos: new Vector3(grid.right, grid.y, grid.z),
-    args: [4, grid.height, 5],
+    pos: new Vector3(grid.right + wallWidth, grid.y, grid.z),
+    args: [wallWidth, grid.height, 5],
     name: "right",
   },
 ];
 
 export const Boundaries = () => {
   const worldTile = useGame((s) => s.worldTile);
+  const setNextWorldTile = useGame((s) => s.setNextWorldTile);
 
-  const openPaths: NeighborTiles = useMemo(() => {
-    return getNeighborTiles(worldTile.position);
+  const doLevelTransition = (boundaryName: Direction) => {
+    const neighborTiles: NeighborTiles = getNeighborTiles(worldTile.position);
+
+    const tile: WorldTile | null = boundaryName
+      ? neighborTiles[boundaryName]
+      : null;
+
+    if (tile) {
+      setNextWorldTile({
+        relativeDirection: boundaryName,
+        worldTile: tile,
+      });
+    }
+  };
+
+  const wallElements: any[] = useMemo(() => {
+    const wallArray: any[] = [];
+    const openPaths = getNeighborTiles(worldTile.position);
+
+    walls.forEach((w, i) => {
+      const isSensor = !!openPaths[w.name];
+
+      wallArray.push(
+        <CuboidCollider
+          args={w.args}
+          key={`wall-${i}`}
+          restitution={2}
+          friction={0}
+          position={w.pos}
+          sensor={isSensor}
+          onIntersectionEnter={({ other }) => {
+            const object = other.rigidBodyObject?.userData as RigidBodyData;
+
+            if (object?.type === "player" && object?.name === "p1") {
+              postDebounce(() => doLevelTransition(w.name), 500);
+            }
+          }}
+        />
+      );
+    });
+
+    return wallArray;
   }, [worldTile]);
 
-  return (
-    <>
-      {walls.map((w, i) => {
-        const isPortal = !!openPaths[w.name];
-        return (
-          <RigidBody
-            key={`wall-${i}`}
-            type='fixed'
-            restitution={20}
-            friction={0}
-            position={w.pos}
-            userData={{ type: isPortal ? "portal" : "wall", name: w.name }}
-          >
-            <mesh>
-              <boxGeometry args={w.args} />
-              <meshStandardMaterial transparent opacity={0} />
-            </mesh>
-          </RigidBody>
-        );
-      })}
-    </>
-  );
+  return <>{wallElements}</>;
 };

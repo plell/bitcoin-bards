@@ -1,14 +1,23 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useKeyboardControls, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Vector3 } from "three";
-import { RigidBody, RapierRigidBody, vec3 } from "@react-three/rapier";
+import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { HealthBar } from "../UI/HealthBar";
 import {
   MOVEMENT_DAMPING,
   NeighborTiles,
   getMovement,
   getNeighborTiles,
+  grid,
+  postDebounce,
 } from "../../Stores/constants";
 import useGame from "../../Stores/useGame";
 import { AttackEffect } from "./Effects/Attack";
@@ -23,8 +32,14 @@ const reuseableVector3b = new Vector3();
 export const Player = () => {
   const players = useGame((s) => s.players);
   const setPlayers = useGame((s) => s.setPlayers);
-  const worldTile = useGame((s) => s.worldTile);
-  const setNextWorldTile = useGame((s) => s.setNextWorldTile);
+  const nextWorldTile = useGame((s) => s.nextWorldTile);
+
+  const pause = useMemo(() => {
+    if (nextWorldTile) {
+      return true;
+    }
+    return false;
+  }, [nextWorldTile]);
 
   const playerTexture = useTexture("sprites/tomo.png");
 
@@ -41,14 +56,31 @@ export const Player = () => {
   }, [players, playerId]);
 
   useEffect(() => {
-    if (worldTile && body.current) {
-      const current = body.current.translation();
+    if (nextWorldTile && body.current) {
+      let { x, y, z } = body.current.translation();
+      const { relativeDirection } = nextWorldTile;
 
-      console.log("set translation!");
+      switch (relativeDirection) {
+        case "top":
+          y = grid.bottom;
+          break;
+        case "bottom":
+          y = grid.top;
+          break;
+        case "left":
+          x = grid.right;
+          break;
+        case "right":
+          x = grid.left;
+          break;
+        default:
+      }
 
-      body.current.setTranslation(vec3({ x: 0, y: 0, z: 0 }), true);
+      body.current.setTranslation({ x, y, z }, true);
+      body.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      body.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
     }
-  }, [worldTile]);
+  }, [nextWorldTile]);
 
   useEffect(() => {
     if (health < 0 && !players[playerId].dead) {
@@ -89,7 +121,7 @@ export const Player = () => {
   }, []);
 
   useFrame(({ mouse }) => {
-    if (body.current) {
+    if (!pause && body.current) {
       const x = (mouse.x * viewport.width) / 2;
       const y = (mouse.y * viewport.height) / 2;
 
@@ -149,23 +181,10 @@ export const Player = () => {
             const damage = object?.strength || 10;
             takeDamage(damage);
           }
-          if (object?.type === "portal") {
-            const neighborTiles: NeighborTiles = getNeighborTiles(
-              worldTile.position
-            );
-
-            const tile: WorldTile | null = object?.name
-              ? neighborTiles[object.name]
-              : null;
-
-            if (tile && body?.current) {
-              // body.current.lockTranslations(true, true);
-              setNextWorldTile(tile);
-            }
-          }
         }}
         userData={{
           type: "player",
+          name: "p1",
         }}
       >
         <mesh>

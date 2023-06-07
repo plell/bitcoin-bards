@@ -72,8 +72,10 @@ export const Enemy = (props: Player) => {
 
   useLayoutEffect(() => {
     const enemiesCopy = { ...enemies };
-    enemiesCopy[props.id].body = body;
-    setEnemies(enemiesCopy);
+    if (enemiesCopy[props.id]) {
+      enemiesCopy[props.id].body = body;
+      setEnemies(enemiesCopy);
+    }
   }, []);
 
   useFrame(() => {
