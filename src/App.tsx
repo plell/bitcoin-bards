@@ -125,20 +125,28 @@ function App() {
         </Canvas>
       </KeyboardControls>
 
-      <MapWrap width={(columnLimit + 1) * 14}>{mapTiles}</MapWrap>
+      <MapWrapWrap>
+        <MapWrap width={(columnLimit + 1) * 14}>{mapTiles}</MapWrap>
+      </MapWrapWrap>
     </>
   );
 }
 
 export default App;
 
+const MapWrapWrap = styled.div`
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  padding: 7px;
+  border-radius: 4px;
+  background: #00000011;
+`;
+
 type MapWrapProps = {
   width: number;
 };
 const MapWrap = styled.div<MapWrapProps>`
-  position: fixed;
-  top: 30px;
-  right: 30px;
   display: flex;
   flex-grow: 0;
   flex-wrap: wrap;
