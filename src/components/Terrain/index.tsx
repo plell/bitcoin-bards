@@ -1,11 +1,21 @@
 import { grid } from "../../Stores/constants";
 import { Boundaries } from "./Boundaries";
 import useGame from "../../Stores/useGame";
+import { useEffect } from "react";
 
 export const Terrain = () => {
   const zones = useGame((s) => s.zones);
-
   const worldTile = useGame((s) => s.worldTile);
+  const discoveredWorldTiles = useGame((s) => s.discoveredWorldTiles);
+  const setDiscoveredWorldTiles = useGame((s) => s.setDiscoveredWorldTiles);
+
+  useEffect(() => {
+    const discoveredWorldTilesCopy = [...discoveredWorldTiles];
+    if (!discoveredWorldTilesCopy.includes(worldTile?.id)) {
+      discoveredWorldTilesCopy.push(worldTile?.id);
+      setDiscoveredWorldTiles(discoveredWorldTilesCopy);
+    }
+  }, [worldTile]);
 
   return (
     <>

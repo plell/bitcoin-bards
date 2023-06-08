@@ -13,9 +13,9 @@ import useGame from "./Stores/useGame";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Interval } from "./Stores/types";
 import { v4 as uuidv4 } from "uuid";
-import { Group } from "three";
 import { LevelManager } from "./components/LevelManager";
 import styled from "styled-components";
+import mqtt from "mqtt/dist/mqtt";
 
 let enemyGeneratorTimeout: Interval = null;
 
@@ -24,17 +24,29 @@ const generatorSpeed = 2000;
 function App() {
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
-  const setWorldTileRef = useGame((s) => s.setWorldTileRef);
   const setAttack = useGame((s) => s.setAttack);
-  const worldTileRef = useRef<Group | null>(null);
+  const setNextWorldTile = useGame((s) => s.setNextWorldTile);
+  const discoveredWorldTiles = useGame((s) => s.discoveredWorldTiles);
   const worldTile = useGame((s) => s.worldTile);
   const [tick, setTick] = useState(false);
 
-  useLayoutEffect(() => {
-    if (worldTileRef.current) {
-      setWorldTileRef(worldTileRef);
+  // mqtt stuff start
+  const [connectionStatus, setConnectionStatus] = useState(false);
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    try {
+      console.log("mqtt", mqtt);
+      let client: mqtt.MqttClient = mqtt.connect("mqtt://test.mosquitto.org");
+      client.on("connect", () => setConnectionStatus(true));
+      client.on("message", (topic, payload, packet) => {
+        setMessages(messages.concat(payload.toString()));
+      });
+    } catch (e) {
+      console.error(e);
     }
-  }, [worldTileRef.current]);
+  }, []);
+  // mqtt stuff end
 
   useEffect(() => {
     if (enemyGeneratorTimeout) {
@@ -70,12 +82,23 @@ function App() {
 
   const mapTiles = useMemo(() => {
     return worldTiles.map((t, i) => {
-      console.log("t");
       const { row, column } = t.position;
       const selected =
         worldTile.position.row === row && worldTile.position.column === column;
+      const discovered = discoveredWorldTiles.includes(t.id);
       return (
-        <TileIcon key={`tile-${i}`} selected={selected} background={t.color} />
+        <TileIcon
+          onPointerDown={() =>
+            setNextWorldTile({
+              worldTile: t,
+              relativeDirection: "top",
+            })
+          }
+          key={`tile-${i}`}
+          discovered={discovered}
+          selected={selected}
+          background={t.color}
+        />
       );
     });
   }, [worldTile]);
@@ -103,24 +126,23 @@ function App() {
 
           <Physics gravity={[0, 0, 0]}>
             <Player />
-            <group ref={worldTileRef}>
-              <Loop />
-              <Terrain />
 
-              {/* {Object.values(players).map((p, i) => {
+            <Loop />
+            <Terrain />
+
+            {/* {Object.values(players).map((p, i) => {
             if (p.dead) {
               return null;
             }
             return <RemotePlayer key={`remore-player-${i}`} {...p} />;
           })} */}
 
-              {Object.values(enemies).map((e, i) => {
-                if (e.dead) {
-                  return null;
-                }
-                return <Enemy key={`enemy-${i}`} {...e} />;
-              })}
-            </group>
+            {Object.values(enemies).map((e, i) => {
+              if (e.dead) {
+                return null;
+              }
+              return <Enemy key={`enemy-${i}`} {...e} />;
+            })}
           </Physics>
         </Canvas>
       </KeyboardControls>
@@ -140,7 +162,6 @@ const MapWrapWrap = styled.div`
   right: 30px;
   padding: 7px;
   border-radius: 4px;
-  background: #00000011;
 `;
 
 type MapWrapProps = {
@@ -156,6 +177,7 @@ const MapWrap = styled.div<MapWrapProps>`
 
 type TileIconProps = {
   selected: boolean;
+  discovered: boolean;
   background: string;
 };
 const TileIcon = styled.div<TileIconProps>`
@@ -166,6 +188,8 @@ const TileIcon = styled.div<TileIconProps>`
   width: 10px;
   height: 10px;
   border: 1px solid;
-  border-color: ${(p) => (p.selected ? p.background : "#000")};
-  background: ${(p) => (p.selected ? p.background : "#fff")};
+  border-color: ${(p) =>
+    p.selected ? p.background : p.discovered ? `${p.background}44` : "#000"};
+  background: ${(p) =>
+    p.selected ? p.background : p.discovered ? `${p.background}44` : "#fff"};
 `;

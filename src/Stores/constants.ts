@@ -15,11 +15,12 @@ function generateWorld() {
     var randomColor = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
       
     tiles.push({
-          position: {
-              row,
-              column
-          },
-          color: randomColor
+      position: {
+          row,
+          column
+      },
+      color: randomColor,
+      id: i
     }) 
 
     column += 1 
@@ -81,11 +82,6 @@ const reuseableVector3 = new Vector3()
 
 export const getMovement = (from: Vector3, to: Vector3, speed = 1, ratio = 0.5) => {
     let amp = 3
-    const distance = from.distanceTo(to)
-    
-    if (distance < 10) {
-        amp = 4
-    }
 
     const x =  (to.x - from.x) * ratio
     const y =  (to.y - from.y) * ratio

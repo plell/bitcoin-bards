@@ -44,6 +44,7 @@ export type Direction = 'left' | 'right' | 'top' | 'bottom'
 export type WorldTile = {
     position: TilePosition
     color: string
+    id: number
 }
 
 export type NextWorldTile = {
