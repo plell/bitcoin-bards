@@ -1,5 +1,11 @@
 import { useEffect, useRef, useMemo, useLayoutEffect } from "react";
-import { Group, Vector3 } from "three";
+import {
+  Color,
+  Group,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  Vector3,
+} from "three";
 
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { MOVEMENT_DAMPING, getMovement, grid } from "../../Stores/constants";
@@ -13,7 +19,6 @@ type Interval = ReturnType<typeof setInterval>;
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
 const reuseableVector3c = new Vector3();
-const reuseableVector3d = new Vector3();
 
 const movementInterval = 600;
 const speed = 2;
@@ -45,6 +50,7 @@ export const Enemy = (props: Player) => {
   const setEnemies = useGame((s) => s.setEnemies);
 
   const body = useRef<RapierRigidBody | null>(null);
+  const material = useRef<MeshBasicMaterial | null>(null);
   const group = useRef<Group | null>(null);
 
   const health = useMemo(() => {
@@ -68,7 +74,13 @@ export const Enemy = (props: Player) => {
       enemiesCopy[props.id].dead = true;
       setEnemies(enemiesCopy);
     }
-  }, [health, enemies]);
+
+    material.current?.color.set(new Color("#ffffff"));
+
+    setTimeout(() => {
+      material.current?.color.set(new Color("#000000"));
+    }, 50);
+  }, [health]);
 
   useLayoutEffect(() => {
     const enemiesCopy = { ...enemies };
@@ -186,7 +198,7 @@ export const Enemy = (props: Player) => {
       >
         <mesh>
           <sphereGeometry args={[0.4]} />
-          <meshBasicMaterial color='red' />
+          <meshBasicMaterial ref={material} color='#000000' />
         </mesh>
       </RigidBody>
     </>

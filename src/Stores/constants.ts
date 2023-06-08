@@ -1,9 +1,10 @@
 import { Vector3 } from "three"
 import { Direction, TilePosition, WorldTile,  Pattern, Players, } from "./types"
 
+export const columnLimit = 15
+
 function generateWorld() {
   const totalTiles = 200
-  const columnLimit = 15
   
   const tiles: WorldTile[] = []
   

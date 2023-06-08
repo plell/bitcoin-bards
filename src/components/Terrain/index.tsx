@@ -6,20 +6,12 @@ export const Terrain = () => {
   const zones = useGame((s) => s.zones);
 
   const worldTile = useGame((s) => s.worldTile);
-  const setAttack = useGame((s) => s.setAttack);
-  const attack = useGame((s) => s.attack);
 
   return (
     <>
       <Boundaries />
 
-      <mesh
-        onPointerDown={() => {
-          setAttack(!attack);
-        }}
-        position={[grid.x, grid.y, grid.z]}
-        rotation-z={Math.PI}
-      >
+      <mesh position={[grid.x, grid.y, grid.z]} rotation-z={Math.PI}>
         <planeGeometry args={[grid.width, grid.height]} />
         <meshStandardMaterial color={worldTile.color || "white"} />
       </mesh>

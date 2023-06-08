@@ -10,7 +10,7 @@ interface HealthBarProps {
 export const HealthBar: React.FC<HealthBarProps> = ({ health }) => {
   const barWidth = 1;
   const barHeight = 0.2;
-  const barColor = "teal";
+  const barColor = "red";
   const ref = useRef<Mesh | null>(null);
 
   useFrame(() => {
