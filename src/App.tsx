@@ -125,7 +125,7 @@ function App() {
         </Canvas>
       </KeyboardControls>
 
-      <MapWrap width={(columnLimit + 1) * 12}>{mapTiles}</MapWrap>
+      <MapWrap width={(columnLimit + 1) * 14}>{mapTiles}</MapWrap>
     </>
   );
 }
@@ -157,5 +157,7 @@ const TileIcon = styled.div<TileIconProps>`
   margin: 0 2px 2px 0;
   width: 10px;
   height: 10px;
-  background: ${(p) => (p.selected ? p.background : `${p.background}33`)};
+  border: 1px solid;
+  border-color: ${(p) => (p.selected ? p.background : "#000")};
+  background: ${(p) => (p.selected ? p.background : "#fff")};
 `;
