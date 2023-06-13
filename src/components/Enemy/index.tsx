@@ -125,6 +125,11 @@ export const Enemy = (props: Player) => {
 
     Object.keys(surroundingRigidBodies).forEach((key) => {
       const player = surroundingRigidBodies[key];
+
+      if (player?.dead) {
+        return;
+      }
+
       const meshBodyRef = player.body;
 
       const aPosition = meshBodyRef?.current?.translation();
@@ -155,7 +160,7 @@ export const Enemy = (props: Player) => {
       return closest.position;
     }
 
-    return new Vector3(0, 0, 0);
+    return null;
   };
 
   const applyForce = () => {
@@ -166,6 +171,10 @@ export const Enemy = (props: Player) => {
       const impulse = { x: 0, y: 0, z: 0 };
 
       const destination = getClosestMeshPosition(body, players);
+
+      if (!destination) {
+        return;
+      }
 
       const movement = getMovement(currentPosition, destination, speed * 0.2);
 

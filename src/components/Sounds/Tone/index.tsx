@@ -8,18 +8,13 @@ effectsBus.chain(highPassFilter, Tone.Destination);
 
 const reverb = new Tone.Reverb(3).connect(effectsBus);
 
-const monoSynth = new Tone.MonoSynth({
-  envelope: {
-    attack: 0,
-    decay: 0.9,
-    sustain: 0.2,
-    release: 0.1,
-  },
-});
+const monoSynth = new Tone.PolySynth();
 
-monoSynth.oscillator.type = "triangle2";
+const compressor = new Tone.Compressor(-30, 3);
+
+// monoSynth.oscillator.type = "triangle2";
 monoSynth.volume.value = -6;
-monoSynth.chain(highPassFilter, Tone.Destination);
+monoSynth.chain(highPassFilter, compressor, Tone.Destination);
 
 const monoSynth2 = new Tone.MonoSynth({
   envelope: {
@@ -41,9 +36,6 @@ function addOrganicVariant() {
 let toneStarted = false;
 
 export const playSound = async (note = 310) => {
-  // silence
-  return;
-
   try {
     // start if not started
     if (!toneStarted) {
@@ -53,7 +45,7 @@ export const playSound = async (note = 310) => {
 
     let pitch = note;
 
-    pitch += addOrganicVariant();
+    // pitch += addOrganicVariant();
 
     monoSynth.triggerAttackRelease(pitch, 0.01);
   } catch (e) {

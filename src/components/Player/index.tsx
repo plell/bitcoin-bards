@@ -120,7 +120,15 @@ export const Player = () => {
     };
   }, []);
 
+  const dead = useMemo(() => {
+    return players[playerId]?.dead;
+  }, [players, playerId]);
+
   useFrame(({ mouse }) => {
+    if (dead) {
+      return;
+    }
+
     if (nextWorldTile) {
       teleport();
     } else if (!pause && body.current) {
@@ -162,10 +170,12 @@ export const Player = () => {
 
   return (
     <>
-      <group ref={group}>
-        <HealthBar health={health} />
-        <AttackEffect />
-      </group>
+      {!dead && (
+        <group ref={group}>
+          <HealthBar health={health} />
+          <AttackEffect />
+        </group>
+      )}
 
       <RigidBody
         ref={body}
@@ -190,15 +200,13 @@ export const Player = () => {
           name: "p1",
         }}
       >
-        <mesh
-          onClick={() => {
-            if (body.current) {
-              body.current.setTranslation({ x: 10, y: 10, z: 0 }, true);
-            }
-          }}
-        >
+        <mesh>
           <planeGeometry />
-          <meshStandardMaterial transparent map={playerTexture} />
+          <meshStandardMaterial
+            transparent
+            map={playerTexture}
+            opacity={dead ? 0 : 1}
+          />
         </mesh>
       </RigidBody>
     </>

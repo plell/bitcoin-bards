@@ -14,7 +14,10 @@ const getNoteGridPosition = (step: number, stepCount: number) => {
 
 export const Loop = () => {
   const players = useGame((s) => s.players);
-  const loopPattern = useGame((s) => s.loopPattern);
+
+  const worldTile = useGame((s) => s.worldTile);
+
+  const loopPattern = worldTile.pattern;
 
   const ref = useRef<Mesh | null>(null);
   const [playedList, setPlayedList] = useState<string[]>([]);
@@ -48,7 +51,7 @@ export const Loop = () => {
         !playedList?.includes(playerId) &&
         x < (ref?.current?.position.x || 0)
       ) {
-        playSound();
+        // playSound(999);
         setPlayedList([...playedList, playerId]);
 
         // do enemy damage
@@ -70,6 +73,13 @@ export const Loop = () => {
       ) {
         playSound(note.pitch);
         setPlayedPattern([...playedPattern, note.id]);
+
+        // do enemy damage
+        const enemiesCopy = { ...enemies };
+        Object.keys(enemies).forEach((id: string) => {
+          enemiesCopy[id].health -= 1;
+        });
+        setEnemies(enemiesCopy);
       }
     });
   });

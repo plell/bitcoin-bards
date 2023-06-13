@@ -20,7 +20,8 @@ function generateWorld() {
           column
       },
       color: randomColor,
-      id: i
+      id: i,
+      pattern: generatePattern()
     }) 
 
     column += 1 
@@ -81,13 +82,18 @@ export const MOVEMENT_DAMPING = 5
 const reuseableVector3 = new Vector3()
 
 export const getMovement = (from: Vector3, to: Vector3, speed = 1, ratio = 0.5) => {
-    let amp = 3
+  let amp = 40
+  
+  // slingshot movement
+  // const x =  (to.x - from.x) * ratio
+  // const y =  (to.y - from.y) * ratio
+  // const z = from.z
 
-    const x =  (to.x - from.x) * ratio
-    const y =  (to.y - from.y) * ratio
-    const z = from.z
+  const direction = to.sub(from).normalize()
+  direction.x *= ratio*speed*amp
+  direction.y *= ratio*speed*amp
 
-  return reuseableVector3.set(x*speed*amp,y*speed*amp,z);
+  return direction
 }
 
 
@@ -159,8 +165,30 @@ export const getNeighborTiles = (worldTilePosition: TilePosition) => {
 }
   
 
+function generatePattern() {
+
+  let stepCount = Math.floor(Math.random() * 40)
+  
+  let noteCount = Math.floor(Math.random() * stepCount)
+
+  const notes = []
+
+  for (let i = 0; i < noteCount; i += 1){
+    notes.push({
+        id: i,
+        step: i,
+        pitch: Math.floor(Math.random() * 900) + 200
+    })
+  }
+  
+  return {
+    stepCount,
+    notes
+  }
+}
+
 export const pattern: Pattern = {
-    stepCount: 10,
+    stepCount: 100,
     notes: [
         {
             id: 1,

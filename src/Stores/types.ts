@@ -45,6 +45,7 @@ export type WorldTile = {
     position: TilePosition
     color: string
     id: number
+    pattern: Pattern
 }
 
 export type NextWorldTile = {
