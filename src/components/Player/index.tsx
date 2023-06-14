@@ -190,7 +190,7 @@ export const Player = () => {
         colliders={"ball"}
         linearDamping={MOVEMENT_DAMPING * 3}
         angularDamping={MOVEMENT_DAMPING * 2}
-        onCollisionEnter={({ other }) => {
+        onCollisionEnter={({ other }: any) => {
           const object = other.rigidBodyObject?.userData as RigidBodyData;
           if (object?.type === "enemy") {
             const damage = object?.strength || 10;

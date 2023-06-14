@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from "uuid";
 import { LevelManager } from "./components/LevelManager";
 import styled from "styled-components";
 import mqtt from "mqtt/dist/mqtt";
+import { Fort } from "@mui/icons-material";
 
 let enemyGeneratorTimeout: Interval = null;
 
@@ -86,6 +87,7 @@ function App() {
       const selected =
         worldTile.position.row === row && worldTile.position.column === column;
       const discovered = discoveredWorldTiles.includes(t.id);
+      const hasShrine = !!t.shrine;
       return (
         <TileIcon
           onPointerDown={() =>
@@ -98,7 +100,9 @@ function App() {
           discovered={discovered ? true : false}
           selected={selected}
           background={t.color}
-        />
+        >
+          {hasShrine && <Fort fontSize='8px' />}
+        </TileIcon>
       );
     });
   }, [worldTile]);
@@ -108,7 +112,7 @@ function App() {
       <KeyboardControls map={controls}>
         <Canvas
           onPointerDown={() => {
-            setAttack((attack) => !attack);
+            setAttack((attack: boolean) => !attack);
           }}
         >
           <OrthographicCamera
@@ -183,6 +187,10 @@ type TileIconProps = {
 const TileIcon = styled.div<TileIconProps>`
   flex-grow: 0;
   display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 900;
   border-radius: 2px;
   margin: 0 2px 2px 0;
   width: 10px;

@@ -2,6 +2,7 @@ import { grid } from "../../Stores/constants";
 import { Boundaries } from "./Boundaries";
 import useGame from "../../Stores/useGame";
 import { useEffect } from "react";
+import { Shrine } from "./Shrine";
 
 export const Terrain = () => {
   const zones = useGame((s) => s.zones);
@@ -25,6 +26,8 @@ export const Terrain = () => {
         <planeGeometry args={[grid.width, grid.height]} />
         <meshStandardMaterial color={worldTile.color || "white"} />
       </mesh>
+
+      <Shrine />
 
       {/* {zones.map((z, i) => {
         return (

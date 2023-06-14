@@ -1,43 +1,9 @@
 import { Vector3 } from "three"
-import { Direction, TilePosition, WorldTile,  Players, } from "./types"
+import { Direction, TilePosition, WorldTile,  Players, Note, } from "./types"
 
 export const columnLimit = 15
 
-function generateWorld() {
-  const totalTiles = 200
-  
-  const tiles: WorldTile[] = []
-  
-  let row = 0
-  let column = 0
-  
-  for (let i = 0; i < totalTiles; i += 1){
-    var randomColor = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
-      
-    tiles.push({
-      position: {
-          row,
-          column
-      },
-      color: randomColor,
-      id: i,
-      pattern: generatePattern()
-    }) 
 
-    column += 1 
-    
-    if (column > columnLimit) {
-      row += 1
-      column = 0
-    }
-  }
-
-  console.log('tiles',tiles)
-
-  return tiles
-}
-
-export const worldTiles = generateWorld()
 
 export const controls = [
     {
@@ -75,6 +41,57 @@ export const grid = {
     top: gridY + gridHeight/2,
     bottom: gridY - gridHeight/2,
 }
+
+const randomColor = () => {
+  return '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+}
+
+function generateWorld() {
+  const totalTiles = 200
+  const shrineCount = 20
+  
+  const tiles: WorldTile[] = []
+  
+  let row = 0
+  let column = 0
+  
+  for (let i = 0; i < totalTiles; i += 1){
+    tiles.push({
+      position: {
+          row,
+          column
+      },
+      color: randomColor(),
+      id: i,
+      pattern: generatePattern(),
+      shrine: null
+    }) 
+
+    column += 1 
+    
+    if (column > columnLimit) {
+      row += 1
+      column = 0
+    }
+  }
+
+  for (let i = 0; i < shrineCount; i++){
+    // place castles
+    let index = Math.floor(Math.random() * totalTiles)
+    
+    tiles[index].shrine = {
+      position: new Vector3(grid.top - grid.height/2,grid.right- grid.width/2,0),
+      color: randomColor()
+    }  
+  }
+
+
+  console.log('tiles',tiles)
+
+  return tiles
+}
+
+export const worldTiles = generateWorld()
 
 
 export const MOVEMENT_DAMPING = 5
@@ -170,24 +187,23 @@ function generatePattern() {
     'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3',
     'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4',
     'A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5',
-    'A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6',
   ]
 
   let stepCount = Math.floor(Math.random() * 40)
   
   let noteCount = Math.floor(Math.random() * stepCount) + 3
 
-  const notes = []
-
-
+  const notes: Note[] = []
 
   for (let i = 0; i < noteCount; i += 1){
 
     const randomStep = Math.floor(Math.random() * noteCount)
+    const randomY = Math.floor(Math.random() * grid.height) - (grid.height / 2)
 
     notes.push({
         id: i,
         step: randomStep,
+        y: randomY,
         pitch: allNotes[Math.floor(Math.random() * notes.length)]
     })
   }

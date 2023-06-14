@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Plane } from "@react-three/drei";
 import { Mesh } from "three";
@@ -8,32 +8,34 @@ interface HealthBarProps {
 }
 
 export const HealthBar: React.FC<HealthBarProps> = ({ health }) => {
-  const barWidth = 1;
-  const barHeight = 0.2;
+  const barWidth = 2;
+  const barHeight = 0.4;
   const barColor = "red";
   const ref = useRef<Mesh | null>(null);
 
-  useFrame(() => {
+  useEffect(() => {
     // Update the width of the health bar based on the health value
-    const newWidth = (health / 100) * barWidth;
-    if (ref.current && newWidth > 0 && newWidth <= barWidth) {
+    const newScale = health / 100;
+
+    if (ref.current) {
       // Only update the width if it's within valid range
-      ref.current.scale.x = newWidth;
+
+      ref.current.scale.x = newScale;
     }
-  });
+  }, [health]);
 
   return (
-    <>
+    <group position={[0, 0.9, 1.6]}>
       {/* Empty health bar */}
-      <Plane args={[barWidth, barHeight]} position={[0, 0.6, 1.6]}>
+      <Plane args={[barWidth, barHeight]}>
         <meshStandardMaterial color='white' />
       </Plane>
 
       {/* Filled health bar */}
-      <Plane ref={ref} args={[barWidth, barHeight]} position={[0, 0.6, 1.61]}>
+      <Plane ref={ref} args={[barWidth, barHeight]} position-z={0.02}>
         <meshStandardMaterial color={barColor} />
       </Plane>
-    </>
+    </group>
   );
 };
 

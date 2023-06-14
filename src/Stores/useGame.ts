@@ -24,7 +24,7 @@ export default create<GameState>((set, get) => ({
     players: {},
     enemies: initialEnemyState,
     zones: initialZones,
-    worldTile: worldTiles[worldTiles.length / 2],
+    worldTile: worldTiles.filter(f=>!f.shrine)[Math.floor(Math.random()*worldTiles.filter(f=>!f.shrine).length)],
     discoveredWorldTiles: [],
     nextWorldTile: null,
     setAttack: (attack) => set({ attack }),

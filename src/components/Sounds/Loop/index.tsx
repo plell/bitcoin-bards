@@ -5,7 +5,7 @@ import { playSound } from "../Tone";
 import { grid } from "../../../Stores/constants";
 import useGame from "../../../Stores/useGame";
 
-const speed = 50;
+const speed = 30;
 
 const getNoteGridPosition = (step: number, stepCount: number) => {
   const stepWidth = grid.width / stepCount;
@@ -41,27 +41,27 @@ export const Loop = () => {
     // move loop forward
     ref.current.position.x += delta * speed;
 
-    // for other players
-    Object.keys(players).forEach((playerId) => {
-      const pp = players[playerId];
+    // // for other players
+    // Object.keys(players).forEach((playerId) => {
+    //   const pp = players[playerId];
 
-      const { x } = pp?.body?.current?.translation() || { x: 0 };
+    //   const { x } = pp?.body?.current?.translation() || { x: 0 };
 
-      if (
-        !playedList?.includes(playerId) &&
-        x < (ref?.current?.position.x || 0)
-      ) {
-        // playSound(999);
-        setPlayedList([...playedList, playerId]);
+    //   if (
+    //     !playedList?.includes(playerId) &&
+    //     x < (ref?.current?.position.x || 0)
+    //   ) {
+    //     // playSound(999);
+    //     setPlayedList([...playedList, playerId]);
 
-        // do enemy damage
-        const enemiesCopy = { ...enemies };
-        Object.keys(enemies).forEach((id: string) => {
-          enemiesCopy[id].health -= 10;
-        });
-        setEnemies(enemiesCopy);
-      }
-    });
+    //     // do enemy damage
+    //     const enemiesCopy = { ...enemies };
+    //     Object.keys(enemies).forEach((id: string) => {
+    //       enemiesCopy[id].health -= 10;
+    //     });
+    //     setEnemies(enemiesCopy);
+    //   }
+    // });
 
     // do pattern
     loopPattern.notes.forEach((note) => {
@@ -95,7 +95,7 @@ export const Loop = () => {
       {loopPattern.notes.map((note, i) => {
         const x = getNoteGridPosition(note.step, loopPattern.stepCount);
         return (
-          <mesh key={i} position={[x, 0, 0]} userData={note}>
+          <mesh key={i} position={[x, note.y, 0]} userData={note}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial color={"red"} />
           </mesh>

@@ -1,4 +1,4 @@
-import { Group, Vector3 } from "three"
+import { Group, Vector, Vector3 } from "three"
 import { RapierRigidBody } from "@react-three/rapier"
 
 export type PlayerPosition = Vector3
@@ -26,6 +26,7 @@ export type Zone = {
 export type Note = {
     id: number
     step: number
+    y: number
     pitch: string
 }
 
@@ -41,8 +42,15 @@ export type TilePosition = {
 
 export type Direction = 'left' | 'right' | 'top' | 'bottom'
 
+export type Shrine = {
+    position: Vector3
+    color: string
+}
+
+
 export type WorldTile = {
     position: TilePosition
+    shrine: Shrine | null
     color: string
     id: number
     pattern: Pattern

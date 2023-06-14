@@ -1,7 +1,8 @@
-import { useEffect, useRef, useMemo, useLayoutEffect } from "react";
+import { useEffect, useRef, useMemo, useLayoutEffect, useState } from "react";
 import {
   Color,
   Group,
+  Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
   Vector3,
@@ -50,10 +51,11 @@ export const Enemy = (props: Player) => {
   const players = useGame((s) => s.players);
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
-
   const body = useRef<RapierRigidBody | null>(null);
   const material = useRef<MeshBasicMaterial | null>(null);
   const group = useRef<Group | null>(null);
+
+  const [flipX, setFlipX] = useState(true);
 
   const health = useMemo(() => {
     const currentHealth = enemies[props.id]?.health || 0;
@@ -184,6 +186,13 @@ export const Enemy = (props: Player) => {
       impulse.x = movement.x;
       impulse.y = movement.y;
 
+      let orientation = false;
+      if (impulse.x < 0) {
+        orientation = true;
+      }
+
+      setFlipX(orientation);
+
       body.current.applyImpulse(impulse, true);
     }
   };
@@ -212,10 +221,10 @@ export const Enemy = (props: Player) => {
           <sphereGeometry args={[0.4]} />
           <meshBasicMaterial ref={material} transparent opacity={0} />
           <SpriteAnimator
+            flipX={flipX}
             position={[0, 0, 0]}
             startFrame={1}
             fps={10}
-            scale={[2, 2, 2]}
             autoPlay={true}
             loop={true}
             numberOfFrames={4}
