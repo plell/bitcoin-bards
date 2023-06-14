@@ -95,7 +95,7 @@ function App() {
             })
           }
           key={`tile-${i}`}
-          discovered={discovered}
+          discovered={discovered ? true : false}
           selected={selected}
           background={t.color}
         />
@@ -116,7 +116,7 @@ function App() {
             position={[0, 0, 20]}
             near={0.1}
             far={60}
-            zoom={16} // Zoom level (1 is default, higher values zoom out)
+            zoom={16}
           />
           {/* <OrbitControls /> */}
           {/* <Perf position='top-left' /> */}

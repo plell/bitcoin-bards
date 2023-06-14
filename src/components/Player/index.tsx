@@ -21,6 +21,7 @@ import useGame from "../../Stores/useGame";
 import { AttackEffect } from "./Effects/Attack";
 
 import { RigidBodyData } from "../../Stores/types";
+import { dieSound } from "../Sounds/Tone";
 
 const speed = 0.2;
 
@@ -86,6 +87,7 @@ export const Player = () => {
     if (health < 0 && !players[playerId].dead) {
       const playersCopy = { ...players };
       playersCopy[playerId].dead = true;
+      dieSound();
       setPlayers(playersCopy);
     }
   }, [health, players]);

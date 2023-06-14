@@ -13,6 +13,8 @@ import HealthBar from "../UI/HealthBar";
 import useGame from "../../Stores/useGame";
 import { Player, Players } from "../../Stores/types";
 import { useFrame } from "@react-three/fiber";
+import { dieSound } from "../Sounds/Tone";
+import { SpriteAnimator } from "@react-three/drei";
 
 type Interval = ReturnType<typeof setInterval>;
 
@@ -72,6 +74,7 @@ export const Enemy = (props: Player) => {
     if (health < 1 && !enemies[props.id].dead) {
       const enemiesCopy = { ...enemies };
       enemiesCopy[props.id].dead = true;
+      dieSound();
       setEnemies(enemiesCopy);
     }
 
@@ -207,7 +210,19 @@ export const Enemy = (props: Player) => {
       >
         <mesh>
           <sphereGeometry args={[0.4]} />
-          <meshBasicMaterial ref={material} color='#000000' />
+          <meshBasicMaterial ref={material} transparent opacity={0} />
+          <SpriteAnimator
+            position={[0, 0, 0]}
+            startFrame={1}
+            fps={10}
+            scale={[2, 2, 2]}
+            autoPlay={true}
+            loop={true}
+            numberOfFrames={4}
+            alphaTest={0.01}
+            textureImageURL={"sprites/enemy_sprites.png"}
+            textureDataURL={"sprites/enemy_sprites.json"}
+          />
         </mesh>
       </RigidBody>
     </>

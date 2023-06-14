@@ -26,7 +26,7 @@ export type Zone = {
 export type Note = {
     id: number
     step: number
-    pitch: number
+    pitch: string
 }
 
 export type Pattern = {

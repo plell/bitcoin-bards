@@ -1,5 +1,5 @@
 import { Vector3 } from "three"
-import { Direction, TilePosition, WorldTile,  Pattern, Players, } from "./types"
+import { Direction, TilePosition, WorldTile,  Players, } from "./types"
 
 export const columnLimit = 15
 
@@ -78,8 +78,6 @@ export const grid = {
 
 
 export const MOVEMENT_DAMPING = 5
-
-const reuseableVector3 = new Vector3()
 
 export const getMovement = (from: Vector3, to: Vector3, speed = 1, ratio = 0.5) => {
   let amp = 40
@@ -165,19 +163,32 @@ export const getNeighborTiles = (worldTilePosition: TilePosition) => {
 }
   
 
+
 function generatePattern() {
+
+  const allNotes: string[] = [
+    'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3',
+    'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4',
+    'A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5',
+    'A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6',
+  ]
 
   let stepCount = Math.floor(Math.random() * 40)
   
-  let noteCount = Math.floor(Math.random() * stepCount)
+  let noteCount = Math.floor(Math.random() * stepCount) + 3
 
   const notes = []
 
+
+
   for (let i = 0; i < noteCount; i += 1){
+
+    const randomStep = Math.floor(Math.random() * noteCount)
+
     notes.push({
         id: i,
-        step: i,
-        pitch: Math.floor(Math.random() * 900) + 200
+        step: randomStep,
+        pitch: allNotes[Math.floor(Math.random() * notes.length)]
     })
   }
   
@@ -185,35 +196,6 @@ function generatePattern() {
     stepCount,
     notes
   }
-}
-
-export const pattern: Pattern = {
-    stepCount: 100,
-    notes: [
-        {
-            id: 1,
-            step: 1,
-            pitch: 200
-            
-        },
-        {
-            id: 2,
-            step: 2,
-            pitch: 300
-            
-        },
-        {
-            id: 3,
-            step: 7,
-            pitch: 400
-            
-        },
-        {
-            id: 4,
-            step: 9,
-            pitch: 500
-        }
-    ]
 }
 
 export const initialEnemyState: Players = {};
