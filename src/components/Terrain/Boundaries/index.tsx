@@ -78,7 +78,7 @@ export const Boundaries = () => {
             const object = other.rigidBodyObject?.userData as RigidBodyData;
 
             if (object?.type === "player" && object?.name === "p1") {
-              postDebounce(() => doLevelTransition(w.name), 500);
+              postDebounce("wall", () => doLevelTransition(w.name), 500);
             }
           }}
         />

@@ -23,7 +23,7 @@ import { AttackEffect } from "./Effects/Attack";
 import { RigidBodyData } from "../../Stores/types";
 import { dieSound } from "../Sounds/Tone";
 
-const speed = 0.2;
+const speed = 0.4;
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
@@ -157,7 +157,7 @@ export const Player = () => {
       body.current.applyImpulse(impulse, true);
 
       if (group?.current) {
-        group?.current.position.copy(currentPosition);
+        group?.current.position.lerp(currentPosition, 0.8);
       }
     }
   });

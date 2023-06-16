@@ -48,15 +48,19 @@ export const playSound = async (note = "A3") => {
       toneStarted = true;
     }
 
-    postDebounce(() => {
-      let triggered = false;
-      synths.forEach((s) => {
-        if (!triggered && s.activeVoices < 10) {
-          s.triggerAttackRelease(note, 0.001);
-          triggered = true;
-        }
-      });
-    }, 50);
+    postDebounce(
+      "tone",
+      () => {
+        let triggered = false;
+        synths.forEach((s) => {
+          if (!triggered && s.activeVoices < 10) {
+            s.triggerAttackRelease(note, 0.001);
+            triggered = true;
+          }
+        });
+      },
+      50
+    );
   } catch (e) {
     console.warn(e);
   }

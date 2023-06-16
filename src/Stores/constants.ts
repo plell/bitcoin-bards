@@ -1,5 +1,5 @@
 import { Vector3 } from "three"
-import { Direction, TilePosition, WorldTile,  Players, Note, } from "./types"
+import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, } from "./types"
 
 export const columnLimit = 15
 
@@ -261,14 +261,15 @@ export const debounce = (fn: Function, ms = 300) => {
   };
 };
 
-let bufferTimeout: ReturnType<typeof setTimeout>|null = null;
-export const postDebounce = (fn: Function, ms = 300) => {
-  if (!bufferTimeout) {
+const bufferTimeouts: Record<string, ReturnType<typeof setTimeout>> = {}
+
+export const postDebounce = (key:string, fn: Function, ms = 300) => {
+  if (!bufferTimeouts[key]) {
     fn()
-    bufferTimeout = setTimeout(() => {
-      if (bufferTimeout) {
-        clearTimeout(bufferTimeout)   
-        bufferTimeout = null
+    bufferTimeouts[key] = setTimeout(() => {
+      if (bufferTimeouts[key]) {
+        clearTimeout(bufferTimeouts[key])   
+        delete bufferTimeouts[key]
       }
     }, ms)
   }

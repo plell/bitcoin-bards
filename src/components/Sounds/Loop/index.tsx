@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Mesh } from "three";
 import { playSound } from "../Tone";
@@ -25,6 +25,23 @@ export const Loop = () => {
 
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
+
+  useEffect(() => {
+    const newPlayed: number[] = [];
+
+    loopPattern.notes.forEach((note) => {
+      const x = getNoteGridPosition(note.step, loopPattern.stepCount);
+
+      if (
+        !newPlayed?.includes(note.id) &&
+        x < (ref?.current?.position.x || 0)
+      ) {
+        newPlayed.push(note.id);
+      }
+    });
+
+    setPlayedPattern(newPlayed);
+  }, [loopPattern]);
 
   useFrame((_, delta) => {
     if (!ref.current) {
