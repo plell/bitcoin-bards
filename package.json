@@ -24,6 +24,7 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.32.2",
     "gsap": "^3.11.5",
+    "leva": "^0.9.35",
     "mqtt": "^4.3.7",
     "prettier": "^2.8.8",
     "r3f-perf": "^7.1.2",

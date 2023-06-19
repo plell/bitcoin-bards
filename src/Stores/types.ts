@@ -47,6 +47,15 @@ export type Shrine = {
     color: string
 }
 
+export type Structure = {
+    health: number;
+    dead: boolean;
+    position: Vector3
+    color: string
+    type: 'house' | 'fountain' | 'statue' | 'station'
+}
+
+export type Structures = Record<string, Structure>
 
 export type WorldTile = {
     position: TilePosition
@@ -54,6 +63,7 @@ export type WorldTile = {
     color: string
     id: number
     pattern: Pattern
+    structures: Structures
 }
 
 export type NextWorldTile = {

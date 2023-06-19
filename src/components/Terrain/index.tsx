@@ -3,6 +3,7 @@ import { Boundaries } from "./Boundaries";
 import useGame from "../../Stores/useGame";
 import { useEffect } from "react";
 import { Shrine } from "./Shrine";
+import { Structures } from "./Structures";
 
 export const Terrain = () => {
   const zones = useGame((s) => s.zones);
@@ -28,6 +29,7 @@ export const Terrain = () => {
       </mesh>
 
       <Shrine />
+      <Structures />
 
       {/* {zones.map((z, i) => {
         return (

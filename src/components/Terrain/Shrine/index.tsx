@@ -8,7 +8,6 @@ export const Shrine = () => {
   if (!shrine) {
     return null;
   }
-  console.log("shrine!");
 
   return (
     <RigidBody type='fixed'>

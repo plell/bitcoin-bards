@@ -9,22 +9,25 @@ import {
 } from "three";
 
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
-import { MOVEMENT_DAMPING, getMovement, grid } from "../../Stores/constants";
+import {
+  MOVEMENT_DAMPING,
+  defaultTempo,
+  getMovement,
+  grid,
+} from "../../Stores/constants";
 import HealthBar from "../UI/HealthBar";
 import useGame from "../../Stores/useGame";
-import { Player, Players } from "../../Stores/types";
+import { Player, Players, Timeout } from "../../Stores/types";
 import { useFrame } from "@react-three/fiber";
 import { dieSound } from "../Sounds/Tone";
 import { SpriteAnimator } from "@react-three/drei";
-
-type Interval = ReturnType<typeof setInterval>;
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
 const reuseableVector3c = new Vector3();
 
-const movementInterval = 600;
-const speed = 2;
+const movementInterval = 1000;
+const speed = 1;
 
 const padding = 1;
 const getEnemyStartPosition = () => {
@@ -48,6 +51,8 @@ const getEnemyStartPosition = () => {
 };
 
 export const Enemy = (props: Player) => {
+  const tempo = useGame((s) => s.tempo);
+  const worldTile = useGame((s) => s.worldTile);
   const players = useGame((s) => s.players);
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
@@ -62,7 +67,7 @@ export const Enemy = (props: Player) => {
     return currentHealth;
   }, [enemies, props.id]);
 
-  let interval: Interval | null = null;
+  let timeout: Timeout = null;
 
   const startPosition = useMemo(() => {
     return getEnemyStartPosition();
@@ -104,19 +109,23 @@ export const Enemy = (props: Player) => {
   });
 
   useEffect(() => {
-    if (interval) {
-      clearInterval(interval);
-    }
-    interval = setInterval(() => {
-      applyForce();
-    }, movementInterval);
-
+    doMovementTimeout();
     return function () {
-      if (interval) {
-        clearInterval(interval);
+      if (timeout) {
+        clearTimeout(timeout);
       }
     };
-  }, [players]);
+  }, []);
+
+  const doMovementTimeout = () => {
+    const t = useGame.getState().tempo;
+    const ratio = defaultTempo / (t || 1);
+
+    timeout = setTimeout(() => {
+      applyForce();
+      doMovementTimeout();
+    }, movementInterval * ratio);
+  };
 
   const getClosestMeshPosition = (
     sourceRigidBody: React.MutableRefObject<RapierRigidBody | null>,
@@ -128,6 +137,14 @@ export const Enemy = (props: Player) => {
       position: null,
     };
 
+    const enemyPosition = sourceRigidBody?.current?.translation();
+
+    const sourcePosition = reuseableVector3b.set(
+      enemyPosition?.x || 0,
+      enemyPosition?.y || 0,
+      enemyPosition?.z || 0
+    );
+
     Object.keys(surroundingRigidBodies).forEach((key) => {
       const player = surroundingRigidBodies[key];
 
@@ -138,17 +155,12 @@ export const Enemy = (props: Player) => {
       const meshBodyRef = player.body;
 
       const aPosition = meshBodyRef?.current?.translation();
-      const bPosition = sourceRigidBody?.current?.translation();
-      if (aPosition !== undefined && bPosition !== undefined) {
+
+      if (aPosition !== undefined && enemyPosition !== undefined) {
         const targetPosition = reuseableVector3a.set(
           aPosition?.x,
           aPosition?.y,
           aPosition?.z
-        );
-        const sourcePosition = reuseableVector3b.set(
-          bPosition?.x,
-          bPosition?.y,
-          bPosition?.z
         );
 
         const distance = sourcePosition.distanceTo(targetPosition);
@@ -160,6 +172,22 @@ export const Enemy = (props: Player) => {
         }
       }
     });
+
+    // if structures
+    // if (worldTile.structures.length) {
+    //   closest.key = "";
+    //   closest.distance = null;
+    //   closest.position = null;
+
+    //   worldTile.structures.forEach((s) => {
+    //     const distance = sourcePosition.distanceTo(s.position);
+    //     if (!closest.distance || closest.distance > distance) {
+    //       closest.key = "structure";
+    //       closest.distance = distance;
+    //       closest.position = s.position;
+    //     }
+    //   });
+    // }
 
     if (closest.position) {
       return closest.position;
@@ -181,7 +209,14 @@ export const Enemy = (props: Player) => {
         return;
       }
 
-      const movement = getMovement(currentPosition, destination, speed * 0.2);
+      const tempo = useGame.getState().tempo;
+
+      const movement = getMovement(
+        currentPosition,
+        destination,
+        speed * 0.2,
+        tempo
+      );
 
       impulse.x = movement.x;
       impulse.y = movement.y;

@@ -1,9 +1,8 @@
 import { Vector3 } from "three"
-import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, } from "./types"
+import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, Structure, Structures, } from "./types"
+import { v4 as uuidv4 } from "uuid";
 
 export const columnLimit = 15
-
-
 
 export const controls = [
     {
@@ -64,6 +63,7 @@ function generateWorld() {
       color: randomColor(),
       id: i,
       pattern: generatePattern(),
+      structures: generateStructures(),
       shrine: null
     }) 
 
@@ -93,11 +93,12 @@ function generateWorld() {
 
 export const worldTiles = generateWorld()
 
-
 export const MOVEMENT_DAMPING = 5
 
-export const getMovement = (from: Vector3, to: Vector3, speed = 1, ratio = 0.5) => {
-  let amp = 40
+export const getMovement = (from: Vector3, to: Vector3, speed = 1, tempo = 40) => {
+  let amp = 30
+
+  const ratio = tempo / defaultTempo
   
   // slingshot movement
   // const x =  (to.x - from.x) * ratio
@@ -107,6 +108,8 @@ export const getMovement = (from: Vector3, to: Vector3, speed = 1, ratio = 0.5) 
   const direction = to.sub(from).normalize()
   direction.x *= ratio*speed*amp
   direction.y *= ratio*speed*amp
+
+
 
   return direction
 }
@@ -214,6 +217,28 @@ function generatePattern() {
   }
 }
 
+function generateStructures() {
+  let structureCount = Math.floor(Math.random() * 3)
+
+  const structures: Structures = {}
+
+  for (let i = 0; i < structureCount; i += 1){
+    const randomY = Math.floor(Math.random() * grid.height) - (grid.height / 2)
+    const randomX = Math.floor(Math.random() * grid.width) - (grid.width / 2)
+
+    const id = uuidv4()
+    structures[id] = {
+      dead: false,
+      color: randomColor(),
+      health:100,
+      position: new Vector3(randomX,randomY,-0.3),
+      type:'house'
+    }
+  }
+  
+  return structures
+}
+
 export const initialEnemyState: Players = {};
 
 export const zoneWidth = grid.width / 4
@@ -260,6 +285,8 @@ export const debounce = (fn: Function, ms = 300) => {
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
 };
+
+export const defaultTempo = 40
 
 const bufferTimeouts: Record<string, ReturnType<typeof setTimeout>> = {}
 

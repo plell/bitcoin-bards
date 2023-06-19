@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
 import { Plane } from "@react-three/drei";
 import { Mesh } from "three";
 
@@ -7,7 +6,7 @@ interface HealthBarProps {
   health: number;
 }
 
-export const HealthBar: React.FC<HealthBarProps> = ({ health }) => {
+export const HealthBar = ({ health }: HealthBarProps) => {
   const barWidth = 2;
   const barHeight = 0.4;
   const barColor = "red";

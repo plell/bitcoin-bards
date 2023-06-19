@@ -68,6 +68,7 @@ function App() {
   }, [tick]);
 
   const addNewEnemy = () => {
+    if (worldTile.shrine) return;
     const enemiesCopy = { ...enemies };
     const newEnemyId = uuidv4();
     enemiesCopy[newEnemyId] = {
@@ -115,14 +116,14 @@ function App() {
             setAttack((attack: boolean) => !attack);
           }}
         >
-          <OrthographicCamera
+          {/* <OrthographicCamera
             makeDefault // Make this camera the default
             position={[0, 0, 20]}
             near={0.1}
             far={60}
             zoom={16}
-          />
-          {/* <OrbitControls /> */}
+          /> */}
+          <OrbitControls />
           {/* <Perf position='top-left' /> */}
           <Lights />
 

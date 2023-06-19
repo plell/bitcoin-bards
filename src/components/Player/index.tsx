@@ -23,7 +23,7 @@ import { AttackEffect } from "./Effects/Attack";
 import { RigidBodyData } from "../../Stores/types";
 import { dieSound } from "../Sounds/Tone";
 
-const speed = 0.4;
+const speed = 0.2;
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
@@ -32,6 +32,7 @@ export const Player = () => {
   const players = useGame((s) => s.players);
   const setPlayers = useGame((s) => s.setPlayers);
   const nextWorldTile = useGame((s) => s.nextWorldTile);
+  const tempo = useGame((s) => s.tempo);
 
   const pause = useMemo(() => {
     if (nextWorldTile) {
@@ -149,7 +150,7 @@ export const Player = () => {
 
       const impulse = { x: 0, y: 0, z: 0 };
 
-      let movement = getMovement(currentPosition, mousePosition, speed);
+      let movement = getMovement(currentPosition, mousePosition, speed, tempo);
 
       impulse.x = movement.x;
       impulse.y = movement.y;
