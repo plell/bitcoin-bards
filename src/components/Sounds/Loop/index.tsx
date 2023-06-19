@@ -1,17 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Color, Mesh, MeshBasicMaterial } from "three";
+import { Color, Mesh, MeshBasicMaterial, Vector3 } from "three";
 import { hihat, kick, playSound, snare } from "../Tone";
-import { grid, postDebounce } from "../../../Stores/constants";
+import { getPushMovement, grid, postDebounce } from "../../../Stores/constants";
 import useGame from "../../../Stores/useGame";
 import { useKeyboardControls } from "@react-three/drei";
-import { Note } from "../../../Stores/types";
+import { Note, Player, Players } from "../../../Stores/types";
 import { RigidBody } from "@react-three/rapier";
+import { Emitter } from "../../Effects/Emitter";
 
-const getNoteGridPosition = (step: number, stepCount: number) => {
-  const stepWidth = grid.width / stepCount;
-  return step * stepWidth - grid.width / 2;
-};
+const reuseableVector3 = new Vector3();
 
 export const Loop = () => {
   const players = useGame((s) => s.players);
@@ -25,12 +23,9 @@ export const Loop = () => {
 
   const ref = useRef<Mesh | null>(null);
   const [playedList, setPlayedList] = useState<string[]>([]);
-  const [playedPattern, setPlayedPattern] = useState<number[]>([]);
+  const [playedPattern, setPlayedPattern] = useState<string[]>([]);
 
   const [playedRhythm, setPlayedRhythm] = useState<number[]>([]);
-
-  const enemies = useGame((s) => s.enemies);
-  const setEnemies = useGame((s) => s.setEnemies);
 
   const [subscribeKeys] = useKeyboardControls();
 
@@ -56,14 +51,24 @@ export const Loop = () => {
   }, []);
 
   useEffect(() => {
-    const newPlayed: number[] = [];
+    if (ref.current) {
+      let scale = 1;
+
+      if (worldTile.shrine) {
+        scale = 0;
+      }
+
+      ref.current.scale.set(scale, scale, scale);
+    }
+  }, [worldTile]);
+
+  useEffect(() => {
+    const newPlayed: string[] = [];
 
     loopPattern.notes.forEach((note) => {
-      const x = getNoteGridPosition(note.step, loopPattern.stepCount);
-
       if (
         !newPlayed?.includes(note.id) &&
-        x < (ref?.current?.position.x || 0)
+        note.position.x < (ref?.current?.position.x || 0)
       ) {
         newPlayed.push(note.id);
       }
@@ -71,15 +76,6 @@ export const Loop = () => {
 
     setPlayedPattern(newPlayed);
   }, [loopPattern]);
-
-  useEffect(() => {
-    // do enemy damage
-    const enemiesCopy = { ...enemies };
-    Object.keys(enemies).forEach((id: string) => {
-      enemiesCopy[id].health -= 1;
-    });
-    setEnemies(enemiesCopy);
-  }, [playedPattern.length]);
 
   const resetLoop = () => {
     if (ref.current) {
@@ -98,7 +94,7 @@ export const Loop = () => {
   }, [worldTile]);
 
   useFrame((_, delta) => {
-    if (worldTile.shrine) {
+    if (worldTile.shrine || players["p1"]?.dead) {
       return;
     }
 
@@ -162,11 +158,9 @@ export const Loop = () => {
 
     // do pattern
     loopPattern.notes.forEach((note) => {
-      const x = getNoteGridPosition(note.step, loopPattern.stepCount);
-
       if (
         !playedPattern?.includes(note.id) &&
-        x < (ref?.current?.position.x || 0)
+        note.position.x < (ref?.current?.position.x || 0)
       ) {
         postDebounce(
           "pattern",
@@ -191,12 +185,10 @@ export const Loop = () => {
       {loopPattern.notes.map((note, i) => {
         return (
           <NoteComponent
-            loopX={ref?.current?.position.x || 0}
             played={playedPattern?.includes(note.id)}
-            stepCount={loopPattern.stepCount}
             color={worldTile.color}
             note={note}
-            key={`note-${i}`}
+            key={`note-${note.id}-${i}`}
           />
         );
       })}
@@ -205,39 +197,82 @@ export const Loop = () => {
 };
 
 type NoteComponentProps = {
-  stepCount: number;
   note: Note;
   color: string;
   played: boolean;
-  loopX: number;
 };
 
-const NoteComponent = ({
-  note,
-  stepCount,
-  color,
-  played,
-  loopX,
-}: NoteComponentProps) => {
-  const x = useMemo(() => getNoteGridPosition(note.step, stepCount), []);
+const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
+  const { position } = note;
+
   const material = useRef<MeshBasicMaterial | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const enemies = useGame((s) => s.enemies);
+  const setEnemies = useGame((s) => s.setEnemies);
+  const [emitterActive, setEmitterActive] = useState(false);
 
   useEffect(() => {
-    if (played) {
-      material.current?.color.set(new Color("red"));
-
-      setTimeout(() => {
-        material.current?.color.set(new Color(color));
-      }, 60);
+    if (!loaded) {
+      setLoaded(true);
+    } else if (played) {
+      emit();
     }
   }, [played]);
 
+  const emit = () => {
+    //  do enemy damage
+
+    const enemiesClone = { ...enemies };
+    let hit = false;
+    Object.values(enemies).forEach((e) => {
+      const { body, dead } = e;
+
+      if (dead) {
+        return;
+      }
+
+      const aPosition = body?.current?.translation();
+      const targetPosition = reuseableVector3.set(
+        aPosition?.x || 0,
+        aPosition?.y || 0,
+        aPosition?.z || 0
+      );
+
+      const distance = position.distanceTo(targetPosition);
+
+      if (distance < 6) {
+        hit = true;
+        enemiesClone[e.id].health -= 20;
+        if (enemiesClone[e.id]?.body?.current) {
+          const impulse = getPushMovement(position, targetPosition);
+          enemiesClone[e.id].body?.current?.applyImpulse(impulse, true);
+        }
+      }
+    });
+
+    if (hit) {
+      setEnemies(enemiesClone);
+    }
+
+    // flash
+    material.current?.color.set(new Color("red"));
+    setEmitterActive(true);
+
+    setTimeout(() => {
+      material.current?.color.set(new Color(color));
+      setEmitterActive(false);
+    }, 200);
+  };
+
   return (
-    <RigidBody type={"fixed"} position={[x, note.y, 0]} userData={note}>
-      <mesh>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial ref={material} color={color} />
-      </mesh>
-    </RigidBody>
+    <group position={position}>
+      <Emitter position={position} active={emitterActive} />
+      <RigidBody type={"fixed"} userData={note} restitution={2}>
+        <mesh>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial ref={material} color={color} />
+        </mesh>
+      </RigidBody>
+    </group>
   );
 };

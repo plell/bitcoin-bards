@@ -24,9 +24,9 @@ export type Zone = {
 }
 
 export type Note = {
-    id: number
+    id: string
     step: number
-    y: number
+    position: Vector3
     pitch: string
 }
 
@@ -48,6 +48,7 @@ export type Shrine = {
 }
 
 export type Structure = {
+    id: string;
     health: number;
     dead: boolean;
     position: Vector3

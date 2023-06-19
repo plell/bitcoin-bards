@@ -1,12 +1,11 @@
 import { RigidBody } from "@react-three/rapier";
 import useGame from "../../../Stores/useGame";
 import HealthBar from "../../UI/HealthBar";
-import { RigidBodyData } from "../../../Stores/types";
-import { useCallback } from "react";
+import { RigidBodyData, Structure } from "../../../Stores/types";
+import { useCallback, useEffect } from "react";
+import { dieSound } from "../../Sounds/Tone";
 
 export const Structures = () => {
-  const world = useGame((s) => s.world);
-  const setWorld = useGame((s) => s.setWorld);
   const worldTile = useGame((s) => s.worldTile);
   const { shrine, structures } = worldTile;
 
@@ -14,19 +13,42 @@ export const Structures = () => {
     return null;
   }
 
-  const takeDamage = useCallback(
-    (damage: number, id: string) => {
-      const { row, column } = worldTile.position;
+  return (
+    <>
+      {Object.keys(structures).map((id: string) => {
+        const s = structures[id];
+        return <StructureComponent {...s} key={id} />;
+      })}
+    </>
+  );
+};
 
-      const tileIndex = world.findIndex(
-        (f) => f.position.column === column && f.position.row === row
-      );
+const StructureComponent = ({
+  health,
+  dead,
+  position,
+  id,
+  color,
+}: Structure) => {
+  const world = useGame((s) => s.world);
+  const setWorld = useGame((s) => s.setWorld);
+  const worldTile = useGame((s) => s.worldTile);
 
+  useEffect(() => {
+    if (health < 0 && !dead) {
       const worldCopy = world.map((w) => ({ ...w }));
 
-      console.log(damage, id);
+      worldCopy[worldTile.id].structures[id].dead = true;
 
-      worldCopy[tileIndex].structures[id].health -= damage;
+      setWorld(worldCopy);
+    }
+  }, [health, dead, id]);
+
+  const takeDamage = useCallback(
+    (damage: number, id: string) => {
+      const worldCopy = world.map((w) => ({ ...w }));
+
+      worldCopy[worldTile.id].structures[id].health -= damage;
 
       setWorld(worldCopy);
     },
@@ -34,32 +56,24 @@ export const Structures = () => {
   );
 
   return (
-    <>
-      {Object.keys(structures).map((id: string, i) => {
-        const s = structures[id];
-        return (
-          <group position={s.position} key={`structure-${i}`}>
-            <HealthBar health={s.health} />
-            <RigidBody
-              type='fixed'
-              onCollisionEnter={({ other }: any) => {
-                console.log("hit");
-                const object = other.rigidBodyObject?.userData as RigidBodyData;
-                if (object?.type === "enemy") {
-                  console.log("is enemy");
-                  const damage = object?.strength || 10;
-                  takeDamage(damage, id);
-                }
-              }}
-            >
-              <mesh scale={2}>
-                <boxGeometry args={[2, 2, 0.8]} />
-                <meshStandardMaterial color={s.color} />
-              </mesh>
-            </RigidBody>
-          </group>
-        );
-      })}
-    </>
+    <group position={position}>
+      <HealthBar health={health} />
+      <RigidBody
+        restitution={4}
+        type='fixed'
+        onCollisionEnter={({ other }: any) => {
+          const object = other.rigidBodyObject?.userData as RigidBodyData;
+          if (object?.type === "enemy") {
+            const damage = object?.strength || 10;
+            takeDamage(damage, id);
+          }
+        }}
+      >
+        <mesh scale={2}>
+          <boxGeometry args={[2, 2, 0.8]} />
+          <meshStandardMaterial color={color} />
+        </mesh>
+      </RigidBody>
+    </group>
   );
 };

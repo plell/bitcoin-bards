@@ -2,6 +2,12 @@ import { Vector3 } from "three"
 import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, Structure, Structures, } from "./types"
 import { v4 as uuidv4 } from "uuid";
 
+export const allNotes: string[] = [
+  'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3',
+  'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4',
+  'A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5',
+]
+
 export const columnLimit = 15
 
 export const controls = [
@@ -40,6 +46,11 @@ export const grid = {
     top: gridY + gridHeight/2,
     bottom: gridY - gridHeight/2,
 }
+
+export const getNoteGridPosition = (step: number, stepCount: number) => {
+  const stepWidth = grid.width / stepCount;
+  return step * stepWidth - grid.width / 2;
+};
 
 const randomColor = () => {
   return '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
@@ -110,6 +121,17 @@ export const getMovement = (from: Vector3, to: Vector3, speed = 1, tempo = 40) =
   direction.y *= ratio*speed*amp
 
 
+
+  return direction
+}
+
+
+export const getPushMovement = (pusher: Vector3, pushed: Vector3,) => {
+  let amp = 3
+
+  const direction = pushed.sub(pusher).normalize()
+  direction.x *= amp 
+  direction.y *= amp 
 
   return direction
 }
@@ -186,11 +208,7 @@ export const getNeighborTiles = (worldTilePosition: TilePosition) => {
 
 function generatePattern() {
 
-  const allNotes: string[] = [
-    'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3',
-    'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4',
-    'A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5',
-  ]
+  
 
   let stepCount = Math.floor(Math.random() * 40)
   
@@ -200,13 +218,16 @@ function generatePattern() {
 
   for (let i = 0; i < noteCount; i += 1){
 
-    const randomStep = Math.floor(Math.random() * noteCount)
+    const randomStep = Math.floor(Math.random() * (noteCount-1))
     const randomY = Math.floor(Math.random() * grid.height) - (grid.height / 2)
 
+    const id = uuidv4()
+    const x = getNoteGridPosition(randomStep, stepCount)
+
     notes.push({
-        id: i,
+        id,
         step: randomStep,
-        y: randomY,
+        position: new Vector3(x,randomY,0),
         pitch: allNotes[Math.floor(Math.random() * notes.length)]
     })
   }
@@ -228,6 +249,7 @@ function generateStructures() {
 
     const id = uuidv4()
     structures[id] = {
+      id, 
       dead: false,
       color: randomColor(),
       health:100,

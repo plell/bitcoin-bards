@@ -51,8 +51,6 @@ const getEnemyStartPosition = () => {
 };
 
 export const Enemy = (props: Player) => {
-  const tempo = useGame((s) => s.tempo);
-  const worldTile = useGame((s) => s.worldTile);
   const players = useGame((s) => s.players);
   const enemies = useGame((s) => s.enemies);
   const setEnemies = useGame((s) => s.setEnemies);
@@ -173,22 +171,6 @@ export const Enemy = (props: Player) => {
       }
     });
 
-    // if structures
-    // if (worldTile.structures.length) {
-    //   closest.key = "";
-    //   closest.distance = null;
-    //   closest.position = null;
-
-    //   worldTile.structures.forEach((s) => {
-    //     const distance = sourcePosition.distanceTo(s.position);
-    //     if (!closest.distance || closest.distance > distance) {
-    //       closest.key = "structure";
-    //       closest.distance = distance;
-    //       closest.position = s.position;
-    //     }
-    //   });
-    // }
-
     if (closest.position) {
       return closest.position;
     }
@@ -240,7 +222,7 @@ export const Enemy = (props: Player) => {
 
       <RigidBody
         ref={body}
-        restitution={6}
+        restitution={1}
         friction={1}
         position={startPosition}
         canSleep={false}
@@ -252,7 +234,7 @@ export const Enemy = (props: Player) => {
           type: "enemy",
         }}
       >
-        <mesh>
+        <mesh castShadow>
           <sphereGeometry args={[0.4]} />
           <meshBasicMaterial ref={material} transparent opacity={0} />
           <SpriteAnimator

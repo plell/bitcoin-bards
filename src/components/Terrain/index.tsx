@@ -23,7 +23,11 @@ export const Terrain = () => {
     <>
       <Boundaries />
 
-      <mesh position={[grid.x, grid.y, grid.z]} rotation-z={Math.PI}>
+      <mesh
+        receiveShadow
+        position={[grid.x, grid.y, grid.z]}
+        rotation-z={Math.PI}
+      >
         <planeGeometry args={[grid.width, grid.height]} />
         <meshStandardMaterial color={worldTile.color || "white"} />
       </mesh>

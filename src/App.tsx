@@ -1,34 +1,46 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Perf } from "r3f-perf";
-import { OrbitControls, OrthographicCamera } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+
 import { Lights } from "./components/Lights";
 import { Player } from "./components/Player";
 import { Terrain } from "./components/Terrain";
 import { KeyboardControls } from "@react-three/drei";
-import { columnLimit, controls, worldTiles } from "./Stores/constants";
+import {
+  allNotes,
+  columnLimit,
+  controls,
+  worldTiles,
+} from "./Stores/constants";
 import { Loop } from "./components/Sounds/Loop";
 import { Enemy } from "./components/Enemy";
 import { Physics } from "@react-three/rapier";
 import useGame from "./Stores/useGame";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Interval } from "./Stores/types";
 import { v4 as uuidv4 } from "uuid";
 import { LevelManager } from "./components/LevelManager";
 import styled from "styled-components";
 import mqtt from "mqtt/dist/mqtt";
 import { Fort } from "@mui/icons-material";
+import { Vector3 } from "three";
+import { playSound } from "./components/Sounds/Tone";
 
 let enemyGeneratorTimeout: Interval = null;
 
 const generatorSpeed = 2000;
 
+const cameraPosition = new Vector3(0, 0, 30);
+
 function App() {
   const enemies = useGame((s) => s.enemies);
+  const players = useGame((s) => s.players);
   const setEnemies = useGame((s) => s.setEnemies);
   const setAttack = useGame((s) => s.setAttack);
   const setNextWorldTile = useGame((s) => s.setNextWorldTile);
   const discoveredWorldTiles = useGame((s) => s.discoveredWorldTiles);
   const worldTile = useGame((s) => s.worldTile);
+  const world = useGame((s) => s.world);
+  const setWorldTile = useGame((s) => s.setWorldTile);
+  const setWorld = useGame((s) => s.setWorld);
   const [tick, setTick] = useState(false);
 
   // mqtt stuff start
@@ -108,14 +120,56 @@ function App() {
     });
   }, [worldTile]);
 
+  const placeNoteAtPlayersPosition = () => {
+    if (players["p1"]?.body?.current) {
+      if (players["p1"]?.dead) {
+        return;
+      }
+      const translation = players["p1"]?.body?.current.translation();
+      const worldTileCopy = { ...worldTile };
+      const worldCopy = [...world];
+      const { notes } = worldTileCopy.pattern;
+
+      const randomStep = Math.floor(Math.random() * (notes.length - 1));
+
+      const id = uuidv4();
+
+      const pitch = allNotes[Math.floor(Math.random() * notes.length)];
+
+      worldTileCopy.pattern.notes.push({
+        id,
+        step: randomStep,
+        position: new Vector3(
+          translation.x,
+          translation.y - 0.5,
+          translation.z
+        ),
+        pitch,
+      });
+
+      const tileIndex = worldCopy.findIndex((f) => f.id === worldTileCopy.id);
+
+      worldCopy[tileIndex] = worldTileCopy;
+
+      playSound(pitch);
+
+      setWorldTile(worldTileCopy);
+      setWorld(worldCopy);
+    }
+  };
+
   return (
     <>
       <KeyboardControls map={controls}>
         <Canvas
+          camera={{
+            position: cameraPosition,
+          }}
           onPointerDown={() => {
-            setAttack((attack: boolean) => !attack);
+            placeNoteAtPlayersPosition();
           }}
         >
+          <color attach='background' args={[worldTile.color || "#fff"]} />
           {/* <OrthographicCamera
             makeDefault // Make this camera the default
             position={[0, 0, 20]}
@@ -123,7 +177,7 @@ function App() {
             far={60}
             zoom={16}
           /> */}
-          <OrbitControls />
+          {/* <OrbitControls /> */}
           {/* <Perf position='top-left' /> */}
           <Lights />
 

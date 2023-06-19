@@ -12,10 +12,6 @@ const tomSynth0 = new Tone.MembraneSynth({
 
 tomSynth0.volume.value = -10;
 
-const distortion = new Tone.Distortion({
-  distortion: 10,
-});
-
 const tomSynth1 = new Tone.MembraneSynth({
   envelope: {
     attack: 0,
@@ -23,9 +19,9 @@ const tomSynth1 = new Tone.MembraneSynth({
     sustain: 0,
     release: 0,
   },
-})
-  .connect(distortion)
-  .toDestination();
+}).toDestination();
+
+tomSynth1.volume.value = -10;
 
 const tomSynth2 = new Tone.MembraneSynth({
   envelope: {
@@ -47,14 +43,17 @@ effectsBus.chain(highPassFilter, Tone.Destination);
 const reverb = new Tone.Reverb(3).connect(effectsBus);
 
 const polySynth0 = new Tone.PolySynth().connect(reverb);
-
 polySynth0.chain(highPassFilter, Tone.Destination);
+
 const polySynth1 = new Tone.PolySynth().connect(reverb);
 
-polySynth0.chain(highPassFilter, Tone.Destination);
 const polySynth2 = new Tone.PolySynth().connect(reverb);
 
-polySynth0.chain(highPassFilter, Tone.Destination);
+const polySynth3 = new Tone.PolySynth().connect(reverb);
+
+const polySynth4 = new Tone.PolySynth().connect(reverb);
+
+const polySynth5 = new Tone.PolySynth().connect(reverb);
 
 polySynth0.volume.value = 6;
 polySynth1.volume.value = 6;
@@ -86,7 +85,14 @@ function addOrganicVariant() {
 
 let toneStarted = false;
 
-const synths = [polySynth0, polySynth1, polySynth2];
+const synths = [
+  polySynth0,
+  polySynth1,
+  polySynth2,
+  polySynth3,
+  polySynth4,
+  polySynth5,
+];
 
 export const playSound = async (note = "A3") => {
   try {
