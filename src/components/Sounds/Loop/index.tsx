@@ -1,31 +1,47 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Color, Mesh, MeshBasicMaterial, Vector3 } from "three";
 import { hihat, kick, playSound, snare } from "../Tone";
-import { getPushMovement, grid, postDebounce } from "../../../Stores/constants";
+import {
+  getMovement,
+  getPushMovement,
+  grid,
+  postDebounce,
+} from "../../../Stores/constants";
 import useGame from "../../../Stores/useGame";
 import { useKeyboardControls } from "@react-three/drei";
-import { Note, Player, Players } from "../../../Stores/types";
-import { RigidBody } from "@react-three/rapier";
+import { Note } from "../../../Stores/types";
+import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { Emitter } from "../../Effects/Emitter";
+import { snapToRadius } from "../../Player/Effects/SnapToRadius";
+import { playerSpeed } from "../../Player";
 
 const reuseableVector3 = new Vector3();
+const reuseableVector3a = new Vector3();
+const reuseableVector3b = new Vector3();
+const reuseableVector3c = new Vector3();
+const reuseableVector3d = new Vector3();
 
 export const Loop = () => {
   const players = useGame((s) => s.players);
   const tempo = useGame((s) => s.tempo);
+  const patterns = useGame((s) => s.patterns);
   const setTempoUp = useGame((s) => s.setTempoUp);
   const setTempoDown = useGame((s) => s.setTempoDown);
+  const snapTo = useGame((s) => s.snapTo);
 
   const worldTile = useGame((s) => s.worldTile);
 
-  const loopPattern = worldTile.pattern;
+  const loopPattern = useMemo(() => {
+    return patterns[worldTile.patternId];
+  }, [worldTile, patterns]);
 
   const ref = useRef<Mesh | null>(null);
-  const [playedList, setPlayedList] = useState<string[]>([]);
   const [playedPattern, setPlayedPattern] = useState<string[]>([]);
 
   const [playedRhythm, setPlayedRhythm] = useState<number[]>([]);
+
+  const { viewport } = useThree();
 
   const [subscribeKeys] = useKeyboardControls();
 
@@ -65,7 +81,7 @@ export const Loop = () => {
   useEffect(() => {
     const newPlayed: string[] = [];
 
-    loopPattern.notes.forEach((note) => {
+    Object.values(loopPattern.notes).forEach((note) => {
       if (
         !newPlayed?.includes(note.id) &&
         note.position.x < (ref?.current?.position.x || 0)
@@ -82,7 +98,6 @@ export const Loop = () => {
       ref.current.position.x = -grid.width / 2;
     }
 
-    setPlayedList([]);
     setPlayedPattern([]);
     setPlayedRhythm([]);
   };
@@ -93,7 +108,7 @@ export const Loop = () => {
     }
   }, [worldTile]);
 
-  useFrame((_, delta) => {
+  useFrame(({ mouse }, delta) => {
     if (worldTile.shrine || players["p1"]?.dead) {
       return;
     }
@@ -134,33 +149,32 @@ export const Loop = () => {
       setPlayedRhythm([...playedRhythm, 1]);
     }
 
-    // // for other players
-    // Object.keys(players).forEach((playerId) => {
-    //   const pp = players[playerId];
+    const playerBody = players["p1"].body?.current;
+    const playerTranslation = playerBody?.translation();
 
-    //   const { x } = pp?.body?.current?.translation() || { x: 0 };
+    const playerPosition = reuseableVector3a.set(
+      playerTranslation?.x || 0,
+      playerTranslation?.y || 0,
+      playerTranslation?.z || 0
+    );
 
-    //   if (
-    //     !playedList?.includes(playerId) &&
-    //     x < (ref?.current?.position.x || 0)
-    //   ) {
-    //     // playSound(999);
-    //     setPlayedList([...playedList, playerId]);
+    // mouse position
+    const mouseX = (mouse.x * viewport.width) / 2;
+    const mouseY = (mouse.y * viewport.height) / 2;
 
-    //     // do enemy damage
-    //     const enemiesCopy = { ...enemies };
-    //     Object.keys(enemies).forEach((id: string) => {
-    //       enemiesCopy[id].health -= 10;
-    //     });
-    //     setEnemies(enemiesCopy);
-    //   }
-    // });
+    const mousePosition = reuseableVector3c.set(mouseX, mouseY, 0);
 
-    // do pattern
-    loopPattern.notes.forEach((note) => {
+    // do pattern loop
+    Object.values(loopPattern.notes).forEach((note) => {
+      const trans = note.body?.current?.translation();
+
+      const notePosition = trans
+        ? reuseableVector3b.set(trans.x, trans.y, trans.z)
+        : note.position;
+
       if (
         !playedPattern?.includes(note.id) &&
-        note.position.x < (ref?.current?.position.x || 0)
+        notePosition.x < (ref?.current?.position.x || 0)
       ) {
         postDebounce(
           "pattern",
@@ -170,6 +184,37 @@ export const Loop = () => {
           },
           10
         );
+      }
+
+      // do snapTo
+      if (snapTo && note.body?.current && playerPosition && playerBody) {
+        const distance = playerPosition.distanceTo(notePosition);
+
+        // use delta movement to move
+        if (distance < snapToRadius) {
+          const impulse = { x: 0, y: 0, z: 0 };
+
+          let movement = getMovement(
+            playerPosition,
+            mousePosition,
+            playerSpeed,
+            tempo
+          );
+
+          impulse.x = movement.x;
+          impulse.y = movement.y;
+
+          const lerpPosition = playerPosition.lerp(
+            reuseableVector3d.set(
+              playerPosition.x + impulse.x,
+              playerPosition.y + impulse.y,
+              notePosition.z
+            ),
+            0.5
+          );
+
+          note.body.current.setTranslation(lerpPosition, true);
+        }
       }
     });
   });
@@ -182,7 +227,7 @@ export const Loop = () => {
       </mesh>
 
       {/* patterns */}
-      {loopPattern.notes.map((note, i) => {
+      {Object.values(loopPattern.notes).map((note, i) => {
         return (
           <NoteComponent
             played={playedPattern?.includes(note.id)}
@@ -203,13 +248,34 @@ type NoteComponentProps = {
 };
 
 const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
-  const { position } = note;
-
+  const body = useRef<RapierRigidBody | null>(null);
   const material = useRef<MeshBasicMaterial | null>(null);
   const [loaded, setLoaded] = useState(false);
   const enemies = useGame((s) => s.enemies);
+  const worldTile = useGame((s) => s.worldTile);
+  const patterns = useGame((s) => s.patterns);
+  const setPatterns = useGame((s) => s.setPatterns);
   const setEnemies = useGame((s) => s.setEnemies);
   const [emitterActive, setEmitterActive] = useState(false);
+
+  const position = useMemo(() => {
+    if (body.current) {
+      const trans = body.current.translation();
+      return reuseableVector3d.set(trans.x, trans.y, trans.z);
+    }
+    return note.position;
+  }, [note, body.current]);
+
+  // update rigid body
+  useLayoutEffect(() => {
+    const patternsCopy = { ...patterns };
+    patternsCopy[worldTile.patternId].notes[note.id] = {
+      ...note,
+      body: body,
+    };
+
+    setPatterns(patternsCopy);
+  }, []);
 
   useEffect(() => {
     if (!loaded) {
@@ -265,14 +331,22 @@ const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
   };
 
   return (
-    <group position={position}>
-      <Emitter position={position} active={emitterActive} />
-      <RigidBody type={"fixed"} userData={note} restitution={2}>
+    <>
+      <Emitter body={body} position={position} active={emitterActive} />
+      <RigidBody
+        ref={body}
+        position={note.position}
+        type={"fixed"}
+        userData={note}
+        restitution={2}
+        lockRotations
+        friction={1}
+      >
         <mesh>
           <boxGeometry args={[1, 1, 1]} />
           <meshBasicMaterial ref={material} color={color} />
         </mesh>
       </RigidBody>
-    </group>
+    </>
   );
 };

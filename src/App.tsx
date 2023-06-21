@@ -4,25 +4,26 @@ import { Lights } from "./components/Lights";
 import { Player } from "./components/Player";
 import { Terrain } from "./components/Terrain";
 import { KeyboardControls } from "@react-three/drei";
-import {
-  allNotes,
-  columnLimit,
-  controls,
-  worldTiles,
-} from "./Stores/constants";
+import { allNotes, columnLimit, controls } from "./Stores/constants";
 import { Loop } from "./components/Sounds/Loop";
 import { Enemy } from "./components/Enemy";
 import { Physics } from "@react-three/rapier";
 import useGame from "./Stores/useGame";
 import { useEffect, useMemo, useState } from "react";
-import { Interval } from "./Stores/types";
+import { Interval, Patterns } from "./Stores/types";
 import { v4 as uuidv4 } from "uuid";
 import { LevelManager } from "./components/LevelManager";
 import styled from "styled-components";
 import mqtt from "mqtt/dist/mqtt";
 import { Fort } from "@mui/icons-material";
 import { Vector3 } from "three";
-import { playSound } from "./components/Sounds/Tone";
+import { Perf } from "r3f-perf";
+
+import {
+  Bloom,
+  DepthOfField,
+  EffectComposer,
+} from "@react-three/postprocessing";
 
 let enemyGeneratorTimeout: Interval = null;
 
@@ -38,6 +39,9 @@ function App() {
   const setNextWorldTile = useGame((s) => s.setNextWorldTile);
   const discoveredWorldTiles = useGame((s) => s.discoveredWorldTiles);
   const worldTile = useGame((s) => s.worldTile);
+  const patterns = useGame((s) => s.patterns);
+  const setPatterns = useGame((s) => s.setPatterns);
+
   const world = useGame((s) => s.world);
   const setWorldTile = useGame((s) => s.setWorldTile);
   const setWorld = useGame((s) => s.setWorld);
@@ -95,7 +99,7 @@ function App() {
   };
 
   const mapTiles = useMemo(() => {
-    return worldTiles.map((t, i) => {
+    return world.map((t, i) => {
       const { row, column } = t.position;
       const selected =
         worldTile.position.row === row && worldTile.position.column === column;
@@ -126,18 +130,21 @@ function App() {
         return;
       }
       const translation = players["p1"]?.body?.current.translation();
-      const worldTileCopy = { ...worldTile };
-      const worldCopy = [...world];
-      const { notes } = worldTileCopy.pattern;
+      const patternsCopy: Patterns = { ...patterns };
+      const { notes } = patternsCopy[worldTile.patternId];
 
-      const randomStep = Math.floor(Math.random() * (notes.length - 1));
+      const randomStep = Math.floor(
+        Math.random() * (Object.keys(notes).length - 1)
+      );
 
       const id = uuidv4();
 
-      const pitch = allNotes[Math.floor(Math.random() * notes.length)];
+      const pitch =
+        allNotes[Math.floor(Math.random() * Object.keys(notes).length)];
 
-      worldTileCopy.pattern.notes.push({
+      patternsCopy[worldTile.patternId].notes[id] = {
         id,
+        body: null,
         step: randomStep,
         position: new Vector3(
           translation.x,
@@ -145,16 +152,9 @@ function App() {
           translation.z
         ),
         pitch,
-      });
+      };
 
-      const tileIndex = worldCopy.findIndex((f) => f.id === worldTileCopy.id);
-
-      worldCopy[tileIndex] = worldTileCopy;
-
-      playSound(pitch);
-
-      setWorldTile(worldTileCopy);
-      setWorld(worldCopy);
+      setPatterns(patternsCopy);
     }
   };
 
@@ -169,23 +169,28 @@ function App() {
             placeNoteAtPlayersPosition();
           }}
         >
+          <EffectComposer autoClear={false} multisampling={8}>
+            {players["p1"]?.dead && (
+              <DepthOfField
+                focusDistance={0.01}
+                focalLength={0.02}
+                bokehScale={20}
+                height={280}
+              />
+            )}
+            <Bloom luminanceThreshold={1} mipmapBlur />
+          </EffectComposer>
+
           <color attach='background' args={[worldTile.color || "#fff"]} />
-          {/* <OrthographicCamera
-            makeDefault // Make this camera the default
-            position={[0, 0, 20]}
-            near={0.1}
-            far={60}
-            zoom={16}
-          /> */}
+
           {/* <OrbitControls /> */}
-          {/* <Perf position='top-left' /> */}
+          <Perf position='top-left' />
           <Lights />
 
           <LevelManager />
 
           <Physics gravity={[0, 0, 0]}>
             <Player />
-
             <Loop />
             <Terrain />
 
@@ -221,6 +226,7 @@ const MapWrapWrap = styled.div`
   right: 30px;
   padding: 7px;
   border-radius: 4px;
+  opacity: 0.7;
 `;
 
 type MapWrapProps = {

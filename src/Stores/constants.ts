@@ -1,5 +1,5 @@
 import { Vector3 } from "three"
-import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, Structure, Structures, } from "./types"
+import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, Structure, Structures, Notes, Patterns, } from "./types"
 import { v4 as uuidv4 } from "uuid";
 
 export const allNotes: string[] = [
@@ -26,7 +26,11 @@ export const controls = [
     {
         name: 'right',
         keys: ['ArrowRight', 'KeyD']
-    }
+    },
+      {
+        name: 'space',
+        keys: ['Space']
+      },
 ]
 
 const gridX = 0
@@ -60,23 +64,28 @@ function generateWorld() {
   const totalTiles = 200
   const shrineCount = 20
   
-  const tiles: WorldTile[] = []
+  const worldTiles: WorldTile[] = []
+  const worldPatterns: Patterns = {}
   
   let row = 0
   let column = 0
   
   for (let i = 0; i < totalTiles; i += 1){
-    tiles.push({
+
+    const patternId = uuidv4()
+    worldTiles.push({
       position: {
           row,
           column
       },
       color: randomColor(),
       id: i,
-      pattern: generatePattern(),
+      patternId,
       structures: generateStructures(),
       shrine: null
     }) 
+
+    worldPatterns[patternId] = generatePattern()
 
     column += 1 
     
@@ -90,19 +99,19 @@ function generateWorld() {
     // place castles
     let index = Math.floor(Math.random() * totalTiles)
     
-    tiles[index].shrine = {
+    worldTiles[index].shrine = {
       position: new Vector3(grid.top - grid.height/2,grid.right- grid.width/2,0),
       color: randomColor()
     }  
   }
 
 
-  console.log('tiles',tiles)
+  console.log('worldTiles',worldTiles)
 
-  return tiles
+  return { worldTiles, worldPatterns }
 }
 
-export const worldTiles = generateWorld()
+export const generatedWorld = generateWorld()
 
 export const MOVEMENT_DAMPING = 5
 
@@ -110,19 +119,20 @@ export const getMovement = (from: Vector3, to: Vector3, speed = 1, tempo = 40) =
   let amp = 30
 
   const ratio = tempo / defaultTempo
+
+  let movement = to.sub(from).normalize()
+
+  movement.x *= ratio*speed*amp
+  movement.y *= ratio * speed * amp
   
-  // slingshot movement
-  // const x =  (to.x - from.x) * ratio
-  // const y =  (to.y - from.y) * ratio
-  // const z = from.z
+  const distance = from.distanceTo(to)
 
-  const direction = to.sub(from).normalize()
-  direction.x *= ratio*speed*amp
-  direction.y *= ratio*speed*amp
+  if (Math.abs(distance) < 1) {
+    movement = from.lerp(movement, 0.5)
+    
+  } 
 
-
-
-  return direction
+  return movement
 }
 
 
@@ -192,7 +202,7 @@ export const getNeighborTiles = (worldTilePosition: TilePosition) => {
     directionsCheck.forEach((d) => {
         const { row, column } = d.check(worldTilePosition);
   
-        const tileFound = worldTiles.find(
+        const tileFound = generatedWorld.worldTiles.find(
           (f) => f.position.row === row && f.position.column === column
         );
   
@@ -207,14 +217,11 @@ export const getNeighborTiles = (worldTilePosition: TilePosition) => {
 
 
 function generatePattern() {
-
-  
-
   let stepCount = Math.floor(Math.random() * 40)
   
   let noteCount = Math.floor(Math.random() * stepCount) + 3
 
-  const notes: Note[] = []
+  const notes: Notes = {}
 
   for (let i = 0; i < noteCount; i += 1){
 
@@ -224,12 +231,13 @@ function generatePattern() {
     const id = uuidv4()
     const x = getNoteGridPosition(randomStep, stepCount)
 
-    notes.push({
+    notes[id] = {
         id,
+        body:null,
         step: randomStep,
         position: new Vector3(x,randomY,0),
-        pitch: allNotes[Math.floor(Math.random() * notes.length)]
-    })
+        pitch: allNotes[Math.floor(Math.random() * Object.values(notes).length)]
+    }
   }
   
   return {

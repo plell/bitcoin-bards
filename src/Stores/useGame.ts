@@ -1,6 +1,6 @@
 import create from 'zustand'
-import { Players, Pattern, Zone, WorldTile, NextWorldTile } from './types'
-import {  initialEnemyState, initialZones, worldTiles, defaultTempo } from './constants'
+import { Players, Zone, WorldTile, NextWorldTile, Patterns } from './types'
+import {  initialEnemyState, initialZones, defaultTempo, generatedWorld } from './constants'
 
 type GameState = {
     tempo: number
@@ -8,14 +8,17 @@ type GameState = {
     players: Players
     enemies: Players
     zones: Zone[]
+    patterns: Patterns
     world: WorldTile[]
     worldTile: WorldTile
     discoveredWorldTiles: number[]
+    snapTo: boolean
     nextWorldTile: NextWorldTile | null
     setTempo: (tempo: number) => void
     setAttack: (attack: boolean) => void
     setPlayers: (players: Players) => void
     setEnemies: (enemies: Players) => void
+    setPatterns: (patterns: Patterns) => void
     setZones: (zones: Zone[]) => void
     setWorld: (world: WorldTile[]) => void
     setWorldTile: (worldTile: WorldTile) => void
@@ -23,6 +26,7 @@ type GameState = {
     setNextWorldTile: (nextWorldTile: NextWorldTile | null) => void
     setTempoUp: () => void,
     setTempoDown: () => void,
+    setSnapTo: (snapTo:boolean) => void,
 }
 
 export default create<GameState>((set, get) => ({
@@ -30,11 +34,13 @@ export default create<GameState>((set, get) => ({
     players: {},
     enemies: initialEnemyState,
     zones: initialZones,
-    world: worldTiles,
-    worldTile: worldTiles.filter(f=>!f.shrine)[Math.floor(Math.random()*worldTiles.filter(f=>!f.shrine).length)],
+    world: generatedWorld.worldTiles,
+    patterns: generatedWorld.worldPatterns,
+    worldTile: generatedWorld.worldTiles.filter(f=>!f.shrine)[Math.floor(Math.random()*generatedWorld.worldTiles.filter(f=>!f.shrine).length)],
     discoveredWorldTiles: [],
     nextWorldTile: null,
     tempo: defaultTempo,
+    snapTo:false,
     setTempoUp: () => {
         const tempo = get().tempo + 2
 
@@ -52,9 +58,11 @@ export default create<GameState>((set, get) => ({
         
     },
     setTempo: (tempo) => set({ tempo }),
+    setSnapTo: (snapTo) => set({ snapTo }),
     setAttack: (attack) => set({ attack }),
     setPlayers: (players) => set({ players }),
     setEnemies: (enemies) => set({ enemies }),
+    setPatterns: (patterns) => set({ patterns }),
     setZones: (zones) => set({ zones }),
     setWorld: (world) => set({ world }),
     setWorldTile: (worldTile) => set({ worldTile }),

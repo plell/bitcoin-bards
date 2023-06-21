@@ -23,16 +23,21 @@ export type Zone = {
     value: number;
 }
 
+export type Patterns = Record<string, Pattern>
+
 export type Note = {
+    body: React.MutableRefObject<RapierRigidBody | null> | null
     id: string
     step: number
     position: Vector3
     pitch: string
 }
 
+export type Notes = Record<string, Note>
+
 export type Pattern = {
     stepCount: number
-    notes: Note[]
+    notes: Notes
 }
 
 export type TilePosition = {
@@ -63,7 +68,7 @@ export type WorldTile = {
     shrine: Shrine | null
     color: string
     id: number
-    pattern: Pattern
+    patternId: string
     structures: Structures
 }
 

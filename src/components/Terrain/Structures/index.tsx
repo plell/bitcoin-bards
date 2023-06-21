@@ -55,6 +55,10 @@ const StructureComponent = ({
     [worldTile, world, setWorld]
   );
 
+  if (dead) {
+    return null;
+  }
+
   return (
     <group position={position}>
       <HealthBar health={health} />

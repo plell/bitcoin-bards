@@ -1,25 +1,20 @@
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { RapierRigidBody } from "@react-three/rapier";
+import { useEffect, useRef } from "react";
 import { Mesh, Vector3 } from "three";
 
 type Props = {
   active: boolean;
   position: Vector3;
+  body?: React.MutableRefObject<RapierRigidBody | null>;
 };
 
-export const Emitter = ({ active, position }: Props) => {
+export const Emitter = ({ body, active, position }: Props) => {
   const ref = useRef<Mesh | null>(null);
-  const [intensity, setIntensity] = useState(0);
 
   useEffect(() => {
     if (ref.current) {
       ref.current.scale.set(0, 0, 0);
-    }
-
-    if (active) {
-      setIntensity(1);
-    } else {
-      setIntensity(0);
     }
   }, [active]);
 
@@ -28,14 +23,17 @@ export const Emitter = ({ active, position }: Props) => {
       const scale = ref.current.scale.x + 6 * delta;
       ref.current.scale.set(scale, scale, scale);
     }
+
+    if (body?.current && ref?.current) {
+      const trans = body?.current.translation();
+      ref.current.position.set(trans.x, trans.y, trans.z);
+    }
   });
 
   return (
-    <>
-      <mesh ref={ref}>
-        <ringGeometry args={[2, 3, 20]} />
-        <meshStandardMaterial wireframe color={"purple"} />
-      </mesh>
-    </>
+    <mesh position={position} ref={ref}>
+      <ringGeometry args={[2, 3, 20]} />
+      <meshStandardMaterial wireframe color={"purple"} />
+    </mesh>
   );
 };

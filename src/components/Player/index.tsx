@@ -18,12 +18,12 @@ import {
   postDebounce,
 } from "../../Stores/constants";
 import useGame from "../../Stores/useGame";
-import { AttackEffect } from "./Effects/Attack";
 
 import { RigidBodyData } from "../../Stores/types";
 import { dieSound } from "../Sounds/Tone";
+import { SnapRadius } from "./Effects/SnapToRadius";
 
-const speed = 0.2;
+export const playerSpeed = 0.2;
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
@@ -31,6 +31,8 @@ const reuseableVector3b = new Vector3();
 export const Player = () => {
   const players = useGame((s) => s.players);
   const setPlayers = useGame((s) => s.setPlayers);
+  const setSnapTo = useGame((s) => s.setSnapTo);
+  const snapTo = useGame((s) => s.snapTo);
   const nextWorldTile = useGame((s) => s.nextWorldTile);
   const tempo = useGame((s) => s.tempo);
 
@@ -118,8 +120,16 @@ export const Player = () => {
       }
     );
 
+    const unsubscribeSpace = subscribeKeys(
+      (state) => state.space,
+      (space) => {
+        setSnapTo(space);
+      }
+    );
+
     return () => {
       unsubscribeUp();
+      unsubscribeSpace();
     };
   }, []);
 
@@ -150,7 +160,12 @@ export const Player = () => {
 
       const impulse = { x: 0, y: 0, z: 0 };
 
-      let movement = getMovement(currentPosition, mousePosition, speed, tempo);
+      let movement = getMovement(
+        currentPosition,
+        mousePosition,
+        playerSpeed,
+        tempo
+      );
 
       impulse.x = movement.x;
       impulse.y = movement.y;
@@ -176,7 +191,7 @@ export const Player = () => {
       {!dead && (
         <group ref={group}>
           <HealthBar health={health} />
-          <AttackEffect />
+          <SnapRadius />
         </group>
       )}
 
