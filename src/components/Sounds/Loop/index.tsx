@@ -260,6 +260,7 @@ const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
 
   const position = useMemo(() => {
     if (body.current) {
+      console.log("new position");
       const trans = body.current.translation();
       return reuseableVector3d.set(trans.x, trans.y, trans.z);
     }
@@ -283,7 +284,7 @@ const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
     } else if (played) {
       emit();
     }
-  }, [played]);
+  }, [played, body.current]);
 
   const emit = () => {
     //  do enemy damage
@@ -291,20 +292,25 @@ const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
     const enemiesClone = { ...enemies };
     let hit = false;
     Object.values(enemies).forEach((e) => {
-      const { body, dead } = e;
-
-      if (dead) {
+      if (e.dead) {
         return;
       }
 
-      const aPosition = body?.current?.translation();
+      const aPosition = e.body?.current?.translation();
       const targetPosition = reuseableVector3.set(
         aPosition?.x || 0,
         aPosition?.y || 0,
         aPosition?.z || 0
       );
 
-      const distance = position.distanceTo(targetPosition);
+      const trans = body?.current?.translation();
+      const myPosition = reuseableVector3d.set(
+        trans?.x || 0,
+        trans?.y || 0,
+        trans?.z || 0
+      );
+
+      const distance = myPosition.distanceTo(targetPosition);
 
       if (distance < 6) {
         hit = true;
