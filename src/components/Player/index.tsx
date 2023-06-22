@@ -22,6 +22,12 @@ import useGame from "../../Stores/useGame";
 import { RigidBodyData } from "../../Stores/types";
 import { dieSound } from "../Sounds/Tone";
 import { SnapRadius } from "./Effects/SnapToRadius";
+import {
+  DepthOfField,
+  EffectComposer,
+  Pixelation,
+} from "@react-three/postprocessing";
+import { useOuch } from "../hooks/useOuch";
 
 export const playerSpeed = 0.2;
 
@@ -56,6 +62,8 @@ export const Player = () => {
     const currentHealth = players[playerId]?.health || 0;
     return currentHealth;
   }, [players, playerId]);
+
+  const ouch = useOuch(health);
 
   const teleport = () => {
     if (nextWorldTile && body.current) {

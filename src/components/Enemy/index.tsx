@@ -22,6 +22,7 @@ import { useFrame } from "@react-three/fiber";
 import { dieSound } from "../Sounds/Tone";
 import { SpriteAnimator } from "@react-three/drei";
 import { Damage } from "../Effects/Damage";
+import { useOuch } from "../hooks/useOuch";
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
@@ -60,12 +61,13 @@ export const Enemy = (props: Player) => {
   const group = useRef<Group | null>(null);
 
   const [flipX, setFlipX] = useState(true);
-  const [ouch, setOuch] = useState(false);
 
   const health = useMemo(() => {
     const currentHealth = enemies[props.id]?.health || 0;
     return currentHealth;
   }, [enemies, props.id]);
+
+  const ouch = useOuch(health);
 
   let timeout: Timeout = null;
 
@@ -84,12 +86,6 @@ export const Enemy = (props: Player) => {
       dieSound();
       setEnemies(enemiesCopy);
     }
-
-    setOuch(true);
-
-    setTimeout(() => {
-      setOuch(false);
-    }, 200);
   }, [health]);
 
   useLayoutEffect(() => {

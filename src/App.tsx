@@ -25,8 +25,10 @@ import {
   EffectComposer,
   Glitch,
   Outline,
+  Pixelation,
   Selection,
 } from "@react-three/postprocessing";
+import { useOuch } from "./components/hooks/useOuch";
 
 let enemyGeneratorTimeout: Interval = null;
 
@@ -161,6 +163,8 @@ function App() {
     }
   };
 
+  const ouch = useOuch(players["p1"]?.health);
+
   return (
     <>
       <KeyboardControls map={controls}>
@@ -172,49 +176,48 @@ function App() {
             placeNoteAtPlayersPosition();
           }}
         >
-          <Selection>
-            <EffectComposer autoClear={false} multisampling={8}>
-              {players["p1"]?.dead && (
-                <DepthOfField
-                  focusDistance={0.01}
-                  focalLength={0.02}
-                  bokehScale={20}
-                  height={280}
-                />
-              )}
+          <EffectComposer>
+            {players["p1"]?.dead && (
+              <DepthOfField
+                focusDistance={0.01}
+                focalLength={0.02}
+                bokehScale={20}
+                height={280}
+              />
+            )}
+            {ouch && <Pixelation granularity={10} />}
 
-              <Bloom luminanceThreshold={1} mipmapBlur />
-              <Outline edgeStrength={5} />
-            </EffectComposer>
+            <Bloom luminanceThreshold={1} mipmapBlur />
+            <Outline edgeStrength={5} />
+          </EffectComposer>
 
-            <color attach='background' args={[worldTile.color || "#fff"]} />
+          <color attach='background' args={[worldTile.color || "#fff"]} />
 
-            {/* <OrbitControls /> */}
-            <Perf position='top-left' />
-            <Lights />
+          {/* <OrbitControls /> */}
+          <Perf position='top-left' />
+          <Lights />
 
-            <LevelManager />
+          <LevelManager />
 
-            <Physics gravity={[0, 0, 0]}>
-              <Player />
-              <Loop />
-              <Terrain />
+          <Physics gravity={[0, 0, 0]}>
+            <Player />
+            <Loop />
+            <Terrain />
 
-              {/* {Object.values(players).map((p, i) => {
+            {/* {Object.values(players).map((p, i) => {
             if (p.dead) {
               return null;
             }
             return <RemotePlayer key={`remore-player-${i}`} {...p} />;
           })} */}
 
-              {Object.values(enemies).map((e, i) => {
-                if (e.dead) {
-                  return null;
-                }
-                return <Enemy key={`enemy-${i}`} {...e} />;
-              })}
-            </Physics>
-          </Selection>
+            {Object.values(enemies).map((e, i) => {
+              if (e.dead) {
+                return null;
+              }
+              return <Enemy key={`enemy-${i}`} {...e} />;
+            })}
+          </Physics>
         </Canvas>
       </KeyboardControls>
 
