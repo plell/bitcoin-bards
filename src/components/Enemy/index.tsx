@@ -21,6 +21,7 @@ import { Player, Players, Timeout } from "../../Stores/types";
 import { useFrame } from "@react-three/fiber";
 import { dieSound } from "../Sounds/Tone";
 import { SpriteAnimator } from "@react-three/drei";
+import { Damage } from "../Effects/Damage";
 
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
@@ -59,6 +60,7 @@ export const Enemy = (props: Player) => {
   const group = useRef<Group | null>(null);
 
   const [flipX, setFlipX] = useState(true);
+  const [ouch, setOuch] = useState(false);
 
   const health = useMemo(() => {
     const currentHealth = enemies[props.id]?.health || 0;
@@ -83,11 +85,11 @@ export const Enemy = (props: Player) => {
       setEnemies(enemiesCopy);
     }
 
-    material.current?.color.set(new Color("#ffffff"));
+    setOuch(true);
 
     setTimeout(() => {
-      material.current?.color.set(new Color("#000000"));
-    }, 50);
+      setOuch(false);
+    }, 200);
   }, [health]);
 
   useLayoutEffect(() => {
@@ -219,6 +221,8 @@ export const Enemy = (props: Player) => {
       <group ref={group}>
         <HealthBar health={health} />
       </group>
+
+      <Damage active={ouch} body={body} />
 
       <RigidBody
         ref={body}

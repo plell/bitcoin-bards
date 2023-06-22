@@ -23,6 +23,9 @@ import {
   Bloom,
   DepthOfField,
   EffectComposer,
+  Glitch,
+  Outline,
+  Selection,
 } from "@react-three/postprocessing";
 
 let enemyGeneratorTimeout: Interval = null;
@@ -169,45 +172,49 @@ function App() {
             placeNoteAtPlayersPosition();
           }}
         >
-          <EffectComposer autoClear={false} multisampling={8}>
-            {players["p1"]?.dead && (
-              <DepthOfField
-                focusDistance={0.01}
-                focalLength={0.02}
-                bokehScale={20}
-                height={280}
-              />
-            )}
-            <Bloom luminanceThreshold={1} mipmapBlur />
-          </EffectComposer>
+          <Selection>
+            <EffectComposer autoClear={false} multisampling={8}>
+              {players["p1"]?.dead && (
+                <DepthOfField
+                  focusDistance={0.01}
+                  focalLength={0.02}
+                  bokehScale={20}
+                  height={280}
+                />
+              )}
 
-          <color attach='background' args={[worldTile.color || "#fff"]} />
+              <Bloom luminanceThreshold={1} mipmapBlur />
+              <Outline edgeStrength={5} />
+            </EffectComposer>
 
-          {/* <OrbitControls /> */}
-          <Perf position='top-left' />
-          <Lights />
+            <color attach='background' args={[worldTile.color || "#fff"]} />
 
-          <LevelManager />
+            {/* <OrbitControls /> */}
+            <Perf position='top-left' />
+            <Lights />
 
-          <Physics gravity={[0, 0, 0]}>
-            <Player />
-            <Loop />
-            <Terrain />
+            <LevelManager />
 
-            {/* {Object.values(players).map((p, i) => {
+            <Physics gravity={[0, 0, 0]}>
+              <Player />
+              <Loop />
+              <Terrain />
+
+              {/* {Object.values(players).map((p, i) => {
             if (p.dead) {
               return null;
             }
             return <RemotePlayer key={`remore-player-${i}`} {...p} />;
           })} */}
 
-            {Object.values(enemies).map((e, i) => {
-              if (e.dead) {
-                return null;
-              }
-              return <Enemy key={`enemy-${i}`} {...e} />;
-            })}
-          </Physics>
+              {Object.values(enemies).map((e, i) => {
+                if (e.dead) {
+                  return null;
+                }
+                return <Enemy key={`enemy-${i}`} {...e} />;
+              })}
+            </Physics>
+          </Selection>
         </Canvas>
       </KeyboardControls>
 
