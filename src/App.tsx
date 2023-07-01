@@ -1,10 +1,10 @@
 import { Canvas } from "@react-three/fiber";
-
+import { Cursor } from "./components/UI/Cursor";
 import { Lights } from "./components/Lights";
 import { Player } from "./components/Player";
 import { Terrain } from "./components/Terrain";
 import { KeyboardControls } from "@react-three/drei";
-import { allNotes, columnLimit, controls } from "./Stores/constants";
+import { ALL_NOTES, columnLimit, controls } from "./Stores/constants";
 import { Loop } from "./components/Sounds/Loop";
 import { Enemy } from "./components/Enemy";
 import { Physics } from "@react-three/rapier";
@@ -145,7 +145,7 @@ function App() {
       const id = uuidv4();
 
       const pitch =
-        allNotes[Math.floor(Math.random() * Object.keys(notes).length)];
+        ALL_NOTES[Math.floor(Math.random() * Object.keys(notes).length)];
 
       patternsCopy[worldTile.patternId].notes[id] = {
         id,
@@ -165,8 +165,23 @@ function App() {
 
   const ouch = useOuch(players["p1"]?.health);
 
+  const p1IsDead = players["p1"]?.dead;
+
+  const restartGame = () => {
+    console.log("restartGame");
+  };
+
   return (
     <>
+      {p1IsDead && (
+        <Restart
+          onClick={() => {
+            restartGame();
+          }}
+        >
+          you lost conciousness
+        </Restart>
+      )}
       <KeyboardControls map={controls}>
         <Canvas
           camera={{
@@ -177,7 +192,7 @@ function App() {
           }}
         >
           <EffectComposer>
-            {players["p1"]?.dead && (
+            {p1IsDead && (
               <DepthOfField
                 focusDistance={0.01}
                 focalLength={0.02}
@@ -194,10 +209,12 @@ function App() {
           <color attach='background' args={[worldTile.color || "#fff"]} />
 
           {/* <OrbitControls /> */}
-          <Perf position='top-left' />
+          <Perf position='bottom-right' />
           <Lights />
 
           <LevelManager />
+
+          <Cursor />
 
           <Physics gravity={[0, 0, 0]}>
             <Player />
@@ -271,4 +288,20 @@ const TileIcon = styled.div<TileIconProps>`
     p.selected ? p.background : p.discovered ? `${p.background}44` : "#000"};
   background: ${(p) =>
     p.selected ? p.background : p.discovered ? `${p.background}44` : "#fff"};
+`;
+
+const Restart = styled.div`
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 40px;
+  font-weight: 900;
+  color: #fff;
+  z-index: 10;
 `;

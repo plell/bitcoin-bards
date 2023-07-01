@@ -15,12 +15,15 @@ import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { Emitter } from "../../Effects/Emitter";
 import { snapToRadius } from "../../Player/Effects/SnapToRadius";
 import { playerSpeed } from "../../Player";
+import { getNearestGridPosition } from "./constants";
+import { getGridPointsAndLines } from "../../Terrain/Grid";
 
 const reuseableVector3 = new Vector3();
 const reuseableVector3a = new Vector3();
 const reuseableVector3b = new Vector3();
 const reuseableVector3c = new Vector3();
 const reuseableVector3d = new Vector3();
+const reuseableVector3e = new Vector3();
 
 export const Loop = () => {
   const players = useGame((s) => s.players);
@@ -32,7 +35,7 @@ export const Loop = () => {
 
   const worldTile = useGame((s) => s.worldTile);
 
-  const loopPattern = useMemo(() => {
+  const pattern = useMemo(() => {
     return patterns[worldTile.patternId];
   }, [worldTile, patterns]);
 
@@ -44,6 +47,10 @@ export const Loop = () => {
   const { viewport } = useThree();
 
   const [subscribeKeys] = useKeyboardControls();
+
+  const { intersections } = useMemo(() => {
+    return getGridPointsAndLines(pattern);
+  }, [pattern]);
 
   useEffect(() => {
     const unsubscribeUp = subscribeKeys(
@@ -81,7 +88,7 @@ export const Loop = () => {
   useEffect(() => {
     const newPlayed: string[] = [];
 
-    Object.values(loopPattern.notes).forEach((note) => {
+    Object.values(pattern.notes).forEach((note) => {
       if (
         !newPlayed?.includes(note.id) &&
         note.position.x < (ref?.current?.position.x || 0)
@@ -91,7 +98,7 @@ export const Loop = () => {
     });
 
     setPlayedPattern(newPlayed);
-  }, [loopPattern]);
+  }, [pattern]);
 
   const resetLoop = () => {
     if (ref.current) {
@@ -165,7 +172,7 @@ export const Loop = () => {
     const mousePosition = reuseableVector3c.set(mouseX, mouseY, 0);
 
     // do pattern loop
-    Object.values(loopPattern.notes).forEach((note) => {
+    Object.values(pattern.notes).forEach((note) => {
       const trans = note.body?.current?.translation();
 
       const notePosition = trans
@@ -205,7 +212,7 @@ export const Loop = () => {
           impulse.y = movement.y;
 
           const lerpPosition = playerPosition.lerp(
-            reuseableVector3d.set(
+            reuseableVector3e.set(
               playerPosition.x + impulse.x,
               playerPosition.y + impulse.y,
               notePosition.z
@@ -213,7 +220,12 @@ export const Loop = () => {
             0.5
           );
 
-          note.body.current.setTranslation(lerpPosition, true);
+          const nearestGridPosition = getNearestGridPosition(
+            lerpPosition,
+            intersections
+          );
+
+          note.body.current.setTranslation(nearestGridPosition, true);
         }
       }
     });
@@ -227,7 +239,7 @@ export const Loop = () => {
       </mesh>
 
       {/* patterns */}
-      {Object.values(loopPattern.notes).map((note, i) => {
+      {Object.values(pattern.notes).map((note, i) => {
         return (
           <NoteComponent
             played={playedPattern?.includes(note.id)}
@@ -260,7 +272,6 @@ const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
 
   const position = useMemo(() => {
     if (body.current) {
-      console.log("new position");
       const trans = body.current.translation();
       return reuseableVector3d.set(trans.x, trans.y, trans.z);
     }

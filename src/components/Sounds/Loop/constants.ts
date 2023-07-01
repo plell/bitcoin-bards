@@ -1,3 +1,7 @@
+import { Vector3 } from "three"
+import { grid } from "../../../Stores/constants"
+import { getGridPointsAndLines } from "../../Terrain/Grid"
+
 type Note = {
     id: number
     step: number
@@ -36,4 +40,27 @@ export const pattern: Pattern = {
             pitch: 500
         }
     ]
+}
+
+type GridPositions = {
+    distance: number
+    position: Vector3 | null
+}
+
+export const getNearestGridPosition = (position: Vector3, intersections: Vector3[]) => {
+    let nearest: GridPositions = {
+        distance: Infinity,
+        position:null
+    }
+
+    intersections.forEach((pos) => {
+        const distance = position.distanceTo(pos);
+
+        if (distance < nearest.distance) {
+            nearest.distance = distance
+            nearest.position = pos
+        }
+    })
+
+    return nearest.position || position
 }

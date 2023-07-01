@@ -94,7 +94,13 @@ const synths = [
   polySynth5,
 ];
 
+const mute = true;
+
 export const playSound = async (note = "A3") => {
+  if (mute) {
+    return;
+  }
+
   try {
     await init();
 
@@ -117,6 +123,10 @@ export const playSound = async (note = "A3") => {
 };
 
 export const dieSound = async (note = "A1") => {
+  if (mute) {
+    return;
+  }
+
   try {
     await init();
 
@@ -127,6 +137,10 @@ export const dieSound = async (note = "A1") => {
 };
 
 export const kick = async (note = "A1") => {
+  if (mute) {
+    return;
+  }
+
   try {
     await init();
     postDebounce("kick", () => {
@@ -138,6 +152,10 @@ export const kick = async (note = "A1") => {
 };
 
 export const snare = async (note = "D1") => {
+  if (mute) {
+    return;
+  }
+
   try {
     await init();
     postDebounce("snare", () => {
@@ -149,6 +167,10 @@ export const snare = async (note = "D1") => {
 };
 
 export const hihat = async (note = "D4") => {
+  if (mute) {
+    return;
+  }
+
   try {
     await init();
     postDebounce("hihat", () => {

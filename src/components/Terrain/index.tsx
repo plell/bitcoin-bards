@@ -4,6 +4,7 @@ import useGame from "../../Stores/useGame";
 import { useEffect } from "react";
 import { Shrine } from "./Shrine";
 import { Structures } from "./Structures";
+import { Grid } from "./Grid";
 
 export const Terrain = () => {
   const zones = useGame((s) => s.zones);
@@ -32,6 +33,7 @@ export const Terrain = () => {
         <meshStandardMaterial color={worldTile.color || "white"} />
       </mesh>
 
+      <Grid />
       <Shrine />
       <Structures />
 

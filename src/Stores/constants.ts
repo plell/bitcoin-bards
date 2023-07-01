@@ -2,7 +2,7 @@ import { Vector3 } from "three"
 import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, Structure, Structures, Notes, Patterns, } from "./types"
 import { v4 as uuidv4 } from "uuid";
 
-export const allNotes: string[] = [
+export const ALL_NOTES: string[] = [
   'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3',
   'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4',
   'A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5',
@@ -125,12 +125,6 @@ export const getMovement = (from: Vector3, to: Vector3, speed = 1, tempo = 40) =
   movement.x *= ratio*speed*amp
   movement.y *= ratio * speed * amp
   
-  const distance = from.distanceTo(to)
-
-  if (Math.abs(distance) < 1) {
-    movement = from.lerp(movement, 0.5)
-    
-  } 
 
   return movement
 }
@@ -217,7 +211,7 @@ export const getNeighborTiles = (worldTilePosition: TilePosition) => {
 
 
 function generatePattern() {
-  let stepCount = Math.floor(Math.random() * 40)
+  let stepCount = 20
   
   let noteCount = Math.floor(Math.random() * stepCount) + 3
 
@@ -236,7 +230,7 @@ function generatePattern() {
         body:null,
         step: randomStep,
         position: new Vector3(x,randomY,0),
-        pitch: allNotes[Math.floor(Math.random() * Object.values(notes).length)]
+        pitch: ALL_NOTES[Math.floor(Math.random() * Object.values(notes).length)]
     }
   }
   

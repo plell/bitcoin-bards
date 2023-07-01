@@ -55,7 +55,7 @@ export const Player = () => {
 
   const body = useRef<RapierRigidBody | null>(null);
   const group = useRef<Group | null>(null);
-  const { viewport } = useThree();
+
   const [subscribeKeys] = useKeyboardControls();
 
   const health = useMemo(() => {
@@ -145,7 +145,7 @@ export const Player = () => {
     return players[playerId]?.dead;
   }, [players, playerId]);
 
-  useFrame(({ mouse }) => {
+  useFrame(({ mouse, viewport }) => {
     if (dead) {
       return;
     }
@@ -210,7 +210,8 @@ export const Player = () => {
         lockRotations
         canSleep={false}
         restitution={0.2}
-        friction={1}
+        // mass={1}
+        friction={0}
         colliders={"ball"}
         linearDamping={MOVEMENT_DAMPING * 3}
         angularDamping={MOVEMENT_DAMPING * 2}
