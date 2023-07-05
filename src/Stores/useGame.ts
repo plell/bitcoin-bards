@@ -1,6 +1,6 @@
 import create from 'zustand'
-import { Players, Zone, WorldTile, NextWorldTile, Patterns } from './types'
-import { initialEnemyState, initialZones, defaultTempo, generatedWorld } from './constants'
+import { defaultTempo, generatedWorld, initialEnemyState, initialZones } from './constants'
+import { NextWorldTile, Patterns, Players, WorldTile, Zone } from './types'
 
 const initialGameState = {
     players: {},
@@ -47,21 +47,21 @@ export default create<GameState>((set, get) => ({
         const tempo = get().tempo + 2
 
         if (tempo <= 70) {
-            set({ tempo })    
+            set({ tempo })
         }
-        
+
     },
     setTempoDown: () => {
         const tempo = get().tempo - 2
 
         if (tempo >= 0) {
-            set({ tempo })    
+            set({ tempo })
         }
-        
+
     },
     setTempo: (tempo) => set({ tempo }),
     setSnapTo: (snapTo) => set({ snapTo }),
-    
+
     setPlayers: (players) => set({ players }),
     setEnemies: (enemies) => set({ enemies }),
     setPatterns: (patterns) => set({ patterns }),
@@ -70,5 +70,14 @@ export default create<GameState>((set, get) => ({
     setWorldTile: (worldTile) => set({ worldTile }),
     setNextWorldTile: (nextWorldTile) => set({ nextWorldTile }),
     setDiscoveredWorldTiles: (discoveredWorldTiles) => set({ discoveredWorldTiles }),
-    restartGame: () => set({ ...initialGameState }),
+    restartGame: () => {
+        const {players} = get()
+        const {p1} = players
+        p1.health = 100
+        p1.dead = false
+
+        players.p1 = p1
+
+        set({ players })
+    },
 }))
