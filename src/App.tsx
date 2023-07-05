@@ -1,21 +1,21 @@
+import { Fort } from "@mui/icons-material";
+import { KeyboardControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Cursor } from "./components/UI/Cursor";
+import { Physics } from "@react-three/rapier";
+import { ReactElement, useEffect, useMemo, useState } from "react";
+import styled from "styled-components";
+import { Vector3 } from "three";
+import { v4 as uuidv4 } from "uuid";
+import { ALL_NOTES, columnLimit, controls } from "./Stores/constants";
+import { Interval, Patterns } from "./Stores/types";
+import useGame from "./Stores/useGame";
+import { Enemy } from "./components/Enemy";
+import { LevelManager } from "./components/LevelManager";
 import { Lights } from "./components/Lights";
 import { Player } from "./components/Player";
-import { Terrain } from "./components/Terrain";
-import { KeyboardControls } from "@react-three/drei";
-import { ALL_NOTES, columnLimit, controls } from "./Stores/constants";
 import { Loop } from "./components/Sounds/Loop";
-import { Enemy } from "./components/Enemy";
-import { Physics } from "@react-three/rapier";
-import useGame from "./Stores/useGame";
-import { useEffect, useMemo, useState } from "react";
-import { Interval, Patterns } from "./Stores/types";
-import { v4 as uuidv4 } from "uuid";
-import { LevelManager } from "./components/LevelManager";
-import styled from "styled-components";
-import { Fort } from "@mui/icons-material";
-import { Vector3 } from "three";
+import { Terrain } from "./components/Terrain";
+import { Cursor } from "./components/UI/Cursor";
 
 import {
   Bloom,
@@ -38,7 +38,7 @@ const App = () => {
   const restartGame = useGame((s) => s.restartGame);
 
   const setEnemies = useGame((s) => s.setEnemies);
-  
+
   const setNextWorldTile = useGame((s) => s.setNextWorldTile);
   const discoveredWorldTiles = useGame((s) => s.discoveredWorldTiles);
   const worldTile = useGame((s) => s.worldTile);
@@ -46,7 +46,7 @@ const App = () => {
   const setPatterns = useGame((s) => s.setPatterns);
 
   const world = useGame((s) => s.world);
-  
+
   const [tick, setTick] = useState(false);
 
   useEffect(() => {
@@ -97,12 +97,12 @@ const App = () => {
               relativeDirection: "top",
             })
           }
-          
+
           discovered={discovered}
           selected={selected}
           background={t.color}
         >
-          {hasShrine && <Fort fontSize='8px' />}
+          {hasShrine && <Fort />}
         </TileIcon>
       );
     }), [worldTile]);
@@ -145,6 +145,28 @@ const App = () => {
 
   const p1IsDead = players.p1?.dead;
 
+  const toggledEffects: ReactElement<any, any> = useMemo(()=>{
+    const te: ReactElement<any, any>[] = []
+
+    if (p1IsDead){
+      te.push(<DepthOfField
+        key='depth-of-field'
+        focusDistance={0.01}
+        focalLength={0.02}
+        bokehScale={20}
+        height={280}
+      />)
+    }
+
+    if (ouch){
+      te.push(<Pixelation
+        key='pixelation'
+        granularity={10} />)
+    }
+
+    return <>{te}</>
+  },[ouch, p1IsDead])
+
   return (
     <>
       {p1IsDead && (
@@ -166,15 +188,7 @@ const App = () => {
           }}
         >
           <EffectComposer>
-            {p1IsDead && (
-              <DepthOfField
-                focusDistance={0.01}
-                focalLength={0.02}
-                bokehScale={20}
-                height={280}
-              />
-            )}
-            {ouch && <Pixelation granularity={10} />}
+            {toggledEffects}
 
             <Bloom luminanceThreshold={1} mipmapBlur />
             <Outline edgeStrength={5} />
