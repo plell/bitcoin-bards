@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import { RapierRigidBody } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
-import { Mesh, Vector3 } from "three";
+import { Mesh } from "three";
 
 type Props = {
   active: boolean;

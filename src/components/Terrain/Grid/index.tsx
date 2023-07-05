@@ -1,9 +1,8 @@
-import useGame from "../../../Stores/useGame";
-import { ALL_NOTES, grid } from "../../../Stores/constants";
 import { useMemo } from "react";
-import { Line } from "@react-three/drei";
 import { Vector3 } from "three";
+import { ALL_NOTES, grid } from "../../../Stores/constants";
 import { Pattern } from "../../../Stores/types";
+import useGame from "../../../Stores/useGame";
 
 export const getGridPointsAndLines = (pattern: Pattern) => {
   const s: Vector3[][] = [];
@@ -46,28 +45,17 @@ export const Grid = () => {
 
   const pattern = patterns[worldTile.patternId];
 
-  const { steps, notes, intersections } = useMemo(() => {
-    return getGridPointsAndLines(pattern);
-  }, [pattern]);
+  const {intersections } = useMemo(() => getGridPointsAndLines(pattern), [pattern]);
 
   return (
     <>
-      {/* {steps.map((s, i) => {
-        return <Line points={s} key={`${i}-steps`} color={"#000"} />;
-      })}
-
-      {notes.map((n, i) => {
-        return <Line points={n} key={`${i}-scale-steps`} color={"#000"} />;
-      })} */}
-
-      {intersections.map((n, i) => {
-        return (
+      {intersections.map((n, i) => (
           <mesh position={n} key={`${i}-intersects-steps`} scale={0.5}>
             <circleGeometry />
-            <meshBasicMaterial color={"black"} transparent opacity={0.1} />
+            <meshBasicMaterial color="black" transparent opacity={0.1} />
           </mesh>
-        );
-      })}
+        )
+      )}
     </>
   );
 };

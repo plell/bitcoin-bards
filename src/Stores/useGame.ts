@@ -3,7 +3,6 @@ import { Players, Zone, WorldTile, NextWorldTile, Patterns } from './types'
 import { initialEnemyState, initialZones, defaultTempo, generatedWorld } from './constants'
 
 const initialGameState = {
-    attack: false,
     players: {},
     enemies: initialEnemyState,
     zones: initialZones,
@@ -18,7 +17,6 @@ const initialGameState = {
 
 type GameState = {
     tempo: number
-    attack: boolean
     players: Players
     enemies: Players
     zones: Zone[]
@@ -29,7 +27,6 @@ type GameState = {
     snapTo: boolean
     nextWorldTile: NextWorldTile | null
     setTempo: (tempo: number) => void
-    setAttack: (attack: boolean) => void
     setPlayers: (players: Players) => void
     setEnemies: (enemies: Players) => void
     setPatterns: (patterns: Patterns) => void
@@ -41,7 +38,7 @@ type GameState = {
     setTempoUp: () => void,
     setTempoDown: () => void,
     setSnapTo: (snapTo:boolean) => void,
-    restartGame: (gameState:GameState) => void,
+    restartGame: () => void,
 }
 
 export default create<GameState>((set, get) => ({
@@ -64,7 +61,7 @@ export default create<GameState>((set, get) => ({
     },
     setTempo: (tempo) => set({ tempo }),
     setSnapTo: (snapTo) => set({ snapTo }),
-    setAttack: (attack) => set({ attack }),
+    
     setPlayers: (players) => set({ players }),
     setEnemies: (enemies) => set({ enemies }),
     setPatterns: (patterns) => set({ patterns }),

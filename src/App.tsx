@@ -16,16 +16,13 @@ import { LevelManager } from "./components/LevelManager";
 import styled from "styled-components";
 import { Fort } from "@mui/icons-material";
 import { Vector3 } from "three";
-import { Perf } from "r3f-perf";
 
 import {
   Bloom,
   DepthOfField,
   EffectComposer,
-  Glitch,
   Outline,
   Pixelation,
-  Selection,
 } from "@react-three/postprocessing";
 import { useOuch } from "./components/hooks/useOuch";
 
@@ -35,13 +32,13 @@ const generatorSpeed = 2000;
 
 const cameraPosition = new Vector3(0, 0, 30);
 
-function App() {
+const App = () => {
   const enemies = useGame((s) => s.enemies);
   const players = useGame((s) => s.players);
   const restartGame = useGame((s) => s.restartGame);
 
   const setEnemies = useGame((s) => s.setEnemies);
-  const setAttack = useGame((s) => s.setAttack);
+  
   const setNextWorldTile = useGame((s) => s.setNextWorldTile);
   const discoveredWorldTiles = useGame((s) => s.discoveredWorldTiles);
   const worldTile = useGame((s) => s.worldTile);
@@ -49,8 +46,7 @@ function App() {
   const setPatterns = useGame((s) => s.setPatterns);
 
   const world = useGame((s) => s.world);
-  const setWorldTile = useGame((s) => s.setWorldTile);
-  const setWorld = useGame((s) => s.setWorld);
+  
   const [tick, setTick] = useState(false);
 
   useEffect(() => {
@@ -59,7 +55,7 @@ function App() {
     }
 
     enemyGeneratorTimeout = setInterval(() => {
-      setTick((tick) => !tick);
+      setTick((prevTick) => !prevTick);
     }, generatorSpeed);
 
     return function cleanup() {
@@ -86,8 +82,7 @@ function App() {
     setEnemies(enemiesCopy);
   };
 
-  const mapTiles = useMemo(() => {
-    return world.map((t, i) => {
+  const mapTiles = useMemo(() => world.map((t, i) => {
       const { row, column } = t.position;
       const selected =
         worldTile.position.row === row && worldTile.position.column === column;
@@ -95,29 +90,29 @@ function App() {
       const hasShrine = !!t.shrine;
       return (
         <TileIcon
+        key={`tile-${i}`}
           onPointerDown={() =>
             setNextWorldTile({
               worldTile: t,
               relativeDirection: "top",
             })
           }
-          key={`tile-${i}`}
-          discovered={discovered ? true : false}
+          
+          discovered={discovered}
           selected={selected}
           background={t.color}
         >
           {hasShrine && <Fort fontSize='8px' />}
         </TileIcon>
       );
-    });
-  }, [worldTile]);
+    }), [worldTile]);
 
   const placeNoteAtPlayersPosition = () => {
-    if (players["p1"]?.body?.current) {
-      if (players["p1"]?.dead) {
+    if (players.p1?.body?.current) {
+      if (players.p1?.dead) {
         return;
       }
-      const translation = players["p1"]?.body?.current.translation();
+      const translation = players.p1?.body?.current.translation();
       const patternsCopy: Patterns = { ...patterns };
       const { notes } = patternsCopy[worldTile.patternId];
 
@@ -146,9 +141,9 @@ function App() {
     }
   };
 
-  const ouch = useOuch(players["p1"]?.health);
+  const ouch = useOuch(players.p1?.health);
 
-  const p1IsDead = players["p1"]?.dead;
+  const p1IsDead = players.p1?.dead;
 
   return (
     <>
@@ -188,7 +183,7 @@ function App() {
           <color attach='background' args={[worldTile.color || "#fff"]} />
 
           {/* <OrbitControls /> */}
-          {/* <Perf position='bottom-right' /> */}
+
           <Lights />
 
           <LevelManager />

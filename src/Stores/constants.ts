@@ -1,6 +1,6 @@
-import { Vector3 } from "three"
-import { Direction, TilePosition, WorldTile,  Players, Note, Timeout, Structure, Structures, Notes, Patterns, } from "./types"
+import { Vector3 } from "three";
 import { v4 as uuidv4 } from "uuid";
+import { Direction, Notes, Patterns, Players, Structures, TilePosition, WorldTile } from "./types";
 
 export const ALL_NOTES: string[] = [
   'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3',
@@ -56,20 +56,19 @@ export const getNoteGridPosition = (step: number, stepCount: number) => {
   return step * stepWidth - grid.width / 2;
 };
 
-const randomColor = () => {
-  return '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
-}
+const randomColor = () => `#${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`;
+
 
 function generateWorld() {
   const totalTiles = 200
   const shrineCount = 20
-  
+
   const worldTiles: WorldTile[] = []
   const worldPatterns: Patterns = {}
-  
+
   let row = 0
   let column = 0
-  
+
   for (let i = 0; i < totalTiles; i += 1){
 
     const patternId = uuidv4()
@@ -83,26 +82,26 @@ function generateWorld() {
       patternId,
       structures: generateStructures(),
       shrine: null
-    }) 
+    })
 
     worldPatterns[patternId] = generatePattern()
 
-    column += 1 
-    
+    column += 1
+
     if (column > columnLimit) {
       row += 1
       column = 0
     }
   }
 
-  for (let i = 0; i < shrineCount; i++){
+  for (let i = 0; i < shrineCount; i+=1){
     // place castles
-    let index = Math.floor(Math.random() * totalTiles)
-    
+    const index = Math.floor(Math.random() * totalTiles)
+
     worldTiles[index].shrine = {
       position: new Vector3(grid.top - grid.height/2,grid.right- grid.width/2,0),
       color: randomColor()
-    }  
+    }
   }
 
 
@@ -116,26 +115,26 @@ export const generatedWorld = generateWorld()
 export const MOVEMENT_DAMPING = 5
 
 export const getMovement = (from: Vector3, to: Vector3, speed = 1, tempo: number | boolean = 40) => {
-  let amp = 30
+  const amp = 30
 
   const ratio = typeof tempo === 'number' ? (tempo / defaultTempo) : 1
 
-  let movement = to.sub(from).normalize()
+  const movement = to.sub(from).normalize()
 
   movement.x *= ratio * speed * amp
   movement.y *= ratio * speed * amp
-  
+
 
   return movement
 }
 
 
 export const getPushMovement = (pusher: Vector3, pushed: Vector3,) => {
-  let amp = 3
+  const amp = 3
 
   const direction = pushed.sub(pusher).normalize()
-  direction.x *= amp 
-  direction.y *= amp 
+  direction.x *= amp
+  direction.y *= amp
 
   return direction
 }
@@ -146,7 +145,7 @@ type WallCheck = {
     name: Direction;
     check: (position: TilePosition) => TilePosition;
   };
-  
+
   const directionsCheck: WallCheck[] = [
     {
       name: "right",
@@ -190,30 +189,30 @@ export const getNeighborTiles = (worldTilePosition: TilePosition) => {
         'top': null,
         'right': null,
         'left': null,
-        'bottom': null, 
+        'bottom': null,
     }
-    
+
     directionsCheck.forEach((d) => {
         const { row, column } = d.check(worldTilePosition);
-  
+
         const tileFound = generatedWorld.worldTiles.find(
           (f) => f.position.row === row && f.position.column === column
         );
-  
+
         if (tileFound) {
             neighborTiles[d.name] = tileFound
         }
     });
-    
+
     return neighborTiles
 }
-  
+
 
 
 function generatePattern() {
-  let stepCount = 20
-  
-  let noteCount = Math.floor(Math.random() * stepCount) + 3
+  const stepCount = 20
+
+  const noteCount = Math.floor(Math.random() * stepCount) + 3
 
   const notes: Notes = {}
 
@@ -233,7 +232,7 @@ function generatePattern() {
         pitch: ALL_NOTES[Math.floor(Math.random() * Object.values(notes).length)]
     }
   }
-  
+
   return {
     stepCount,
     notes
@@ -241,7 +240,7 @@ function generatePattern() {
 }
 
 function generateStructures() {
-  let structureCount = Math.floor(Math.random() * 3)
+  const structureCount = Math.floor(Math.random() * 3)
 
   const structures: Structures = {}
 
@@ -251,7 +250,7 @@ function generateStructures() {
 
     const id = uuidv4()
     structures[id] = {
-      id, 
+      id,
       dead: false,
       color: randomColor(),
       health:100,
@@ -259,7 +258,7 @@ function generateStructures() {
       type:'house'
     }
   }
-  
+
   return structures
 }
 
@@ -319,7 +318,7 @@ export const postDebounce = (key:string, fn: Function, ms = 300) => {
     fn()
     bufferTimeouts[key] = setTimeout(() => {
       if (bufferTimeouts[key]) {
-        clearTimeout(bufferTimeouts[key])   
+        clearTimeout(bufferTimeouts[key])
         delete bufferTimeouts[key]
       }
     }, ms)

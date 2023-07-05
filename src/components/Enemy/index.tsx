@@ -1,27 +1,24 @@
-import { useEffect, useRef, useMemo, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
-  Color,
   Group,
-  Mesh,
   MeshBasicMaterial,
-  MeshStandardMaterial,
-  Vector3,
+  Vector3
 } from "three";
 
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
+import { SpriteAnimator } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import {
   MOVEMENT_DAMPING,
   defaultTempo,
   getMovement,
   grid,
 } from "../../Stores/constants";
-import HealthBar from "../UI/HealthBar";
-import useGame from "../../Stores/useGame";
 import { Player, Players, Timeout } from "../../Stores/types";
-import { useFrame } from "@react-three/fiber";
-import { dieSound } from "../Sounds/Tone";
-import { SpriteAnimator } from "@react-three/drei";
+import useGame from "../../Stores/useGame";
 import { Damage } from "../Effects/Damage";
+import { dieSound } from "../Sounds/Tone";
+import { HealthBar } from "../UI/HealthBar";
 import { useOuch } from "../hooks/useOuch";
 
 const reuseableVector3a = new Vector3();
@@ -62,18 +59,13 @@ export const Enemy = (props: Player) => {
 
   const [flipX, setFlipX] = useState(true);
 
-  const health = useMemo(() => {
-    const currentHealth = enemies[props.id]?.health || 0;
-    return currentHealth;
-  }, [enemies, props.id]);
+  const health = useMemo(() => enemies[props.id]?.health || 0, [enemies, props.id]);
 
   const ouch = useOuch(health);
 
   let timeout: Timeout = null;
 
-  const startPosition = useMemo(() => {
-    return getEnemyStartPosition();
-  }, []);
+  const startPosition = useMemo(() =>  getEnemyStartPosition(), []);
 
   useEffect(() => {
     if (!enemies[props.id]) {
@@ -106,7 +98,8 @@ export const Enemy = (props: Player) => {
 
   useEffect(() => {
     doMovementTimeout();
-    return function () {
+
+    return function cleanup() {
       if (timeout) {
         clearTimeout(timeout);
       }
@@ -189,7 +182,7 @@ export const Enemy = (props: Player) => {
         return;
       }
 
-      const tempo = useGame.getState().tempo;
+      const {tempo} = useGame.getState()
 
       const movement = getMovement(
         currentPosition,
@@ -242,8 +235,8 @@ export const Enemy = (props: Player) => {
             position={[0, 0, 0]}
             startFrame={1}
             fps={10}
-            autoPlay={true}
-            loop={true}
+            autoPlay
+            loop
             numberOfFrames={4}
             alphaTest={0.01}
             textureImageURL={"sprites/enemy_sprites.png"}

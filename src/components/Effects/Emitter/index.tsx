@@ -33,7 +33,7 @@ export const Emitter = ({ body, active, position }: Props) => {
   return (
     <mesh position={position} ref={ref}>
       <ringGeometry args={[2, 3, 20]} />
-      <meshStandardMaterial wireframe color={"purple"} />
+      <meshStandardMaterial wireframe color="purple" />
     </mesh>
   );
 };

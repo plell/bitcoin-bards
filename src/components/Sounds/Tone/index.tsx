@@ -79,10 +79,6 @@ const init = async () => {
   }
 };
 
-function addOrganicVariant() {
-  return Math.floor((Math.random() - 0.5) * 20);
-}
-
 let toneStarted = false;
 
 const synths = [

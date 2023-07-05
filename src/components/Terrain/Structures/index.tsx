@@ -1,9 +1,8 @@
 import { RigidBody } from "@react-three/rapier";
-import useGame from "../../../Stores/useGame";
-import HealthBar from "../../UI/HealthBar";
-import { RigidBodyData, Structure } from "../../../Stores/types";
 import { useCallback, useEffect } from "react";
-import { dieSound } from "../../Sounds/Tone";
+import { RigidBodyData, Structure } from "../../../Stores/types";
+import useGame from "../../../Stores/useGame";
+import { HealthBar } from "../../UI/HealthBar";
 
 export const Structures = () => {
   const worldTile = useGame((s) => s.worldTile);
@@ -45,10 +44,10 @@ const StructureComponent = ({
   }, [health, dead, id]);
 
   const takeDamage = useCallback(
-    (damage: number, id: string) => {
+    (damage: number, _id: string) => {
       const worldCopy = world.map((w) => ({ ...w }));
 
-      worldCopy[worldTile.id].structures[id].health -= damage;
+      worldCopy[worldTile.id].structures[_id].health -= damage;
 
       setWorld(worldCopy);
     },

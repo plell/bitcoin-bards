@@ -1,23 +1,21 @@
+import { useKeyboardControls, useTexture } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
-import { useKeyboardControls, useTexture } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
-import { Group, Vector, Vector3 } from "three";
-import { RigidBody, RapierRigidBody, vec3 } from "@react-three/rapier";
-import { HealthBar } from "../UI/HealthBar";
+import { Group, Vector3 } from "three";
 import {
   MOVEMENT_DAMPING,
   getMovement,
-  grid,
-  postDebounce,
+  grid
 } from "../../Stores/constants";
 import useGame from "../../Stores/useGame";
+import { HealthBar } from "../UI/HealthBar";
 
 import { RigidBodyData } from "../../Stores/types";
 import { dieSound } from "../Sounds/Tone";
@@ -34,9 +32,9 @@ export const Player = () => {
   const players = useGame((s) => s.players);
   const setPlayers = useGame((s) => s.setPlayers);
   const setSnapTo = useGame((s) => s.setSnapTo);
-  const snapTo = useGame((s) => s.snapTo);
+
   const nextWorldTile = useGame((s) => s.nextWorldTile);
-  const tempo = useGame((s) => s.tempo);
+
 
   const pause = useMemo(() => {
     if (nextWorldTile) {
@@ -59,11 +57,13 @@ export const Player = () => {
     return currentHealth;
   }, [players, playerId]);
 
-  const ouch = useOuch(health);
+  useOuch(health);
 
   const teleport = () => {
     if (nextWorldTile && body.current) {
-      let { x, y, z } = body.current.translation();
+      const currentTranslation = body.current.translation();
+      let { x, y} = currentTranslation
+      const { z } = currentTranslation
       const { relativeDirection } = nextWorldTile;
 
       const pad = 5;
@@ -137,9 +137,7 @@ export const Player = () => {
     };
   }, []);
 
-  const dead = useMemo(() => {
-    return players[playerId]?.dead;
-  }, [players, playerId]);
+  const dead = useMemo(() => players[playerId]?.dead, [players, playerId]);
 
   useFrame(({ mouse, viewport }) => {
     if (dead) {
@@ -164,7 +162,7 @@ export const Player = () => {
 
       const impulse = { x: 0, y: 0, z: 0 };
 
-      let movement = getMovement(
+      const movement = getMovement(
         currentPosition,
         mousePosition,
         playerSpeed,

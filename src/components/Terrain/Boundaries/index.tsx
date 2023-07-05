@@ -1,3 +1,5 @@
+import { CuboidCollider } from "@react-three/rapier";
+import { ReactElement, useMemo } from "react";
 import { Vector3 } from "three";
 import {
   NeighborTiles,
@@ -5,10 +7,8 @@ import {
   grid,
   postDebounce,
 } from "../../../Stores/constants";
-import { CuboidCollider } from "@react-three/rapier";
-import useGame from "../../../Stores/useGame";
-import { useMemo } from "react";
 import { Direction, RigidBodyData, WorldTile } from "../../../Stores/types";
+import useGame from "../../../Stores/useGame";
 
 type Wall = {
   pos: Vector3;
@@ -59,8 +59,8 @@ export const Boundaries = () => {
     }
   };
 
-  const wallElements: any[] = useMemo(() => {
-    const wallArray: any[] = [];
+  const wallElements: ReactElement[] = useMemo(() => {
+    const wallArray: ReactElement[] = [];
     const openPaths = getNeighborTiles(worldTile.position);
 
     walls.forEach((w, i) => {

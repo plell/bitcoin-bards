@@ -1,13 +1,13 @@
-import { grid } from "../../Stores/constants";
-import { Boundaries } from "./Boundaries";
-import useGame from "../../Stores/useGame";
 import { useEffect } from "react";
+import { grid } from "../../Stores/constants";
+import useGame from "../../Stores/useGame";
+import { Boundaries } from "./Boundaries";
+import { Grid } from "./Grid";
 import { Shrine } from "./Shrine";
 import { Structures } from "./Structures";
-import { Grid } from "./Grid";
 
 export const Terrain = () => {
-  const zones = useGame((s) => s.zones);
+
   const worldTile = useGame((s) => s.worldTile);
   const discoveredWorldTiles = useGame((s) => s.discoveredWorldTiles);
   const setDiscoveredWorldTiles = useGame((s) => s.setDiscoveredWorldTiles);

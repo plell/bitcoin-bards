@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
 import { Plane } from "@react-three/drei";
+import { useEffect, useRef } from "react";
 import { Mesh } from "three";
 
 interface HealthBarProps {

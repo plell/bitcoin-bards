@@ -35,9 +35,7 @@ export const Loop = () => {
 
   const worldTile = useGame((s) => s.worldTile);
 
-  const pattern = useMemo(() => {
-    return patterns[worldTile.patternId];
-  }, [worldTile, patterns]);
+  const pattern = useMemo(() => patterns[worldTile.patternId], [worldTile, patterns]);
 
   const ref = useRef<Mesh | null>(null);
   const [playedPattern, setPlayedPattern] = useState<string[]>([]);
@@ -48,9 +46,7 @@ export const Loop = () => {
 
   const [subscribeKeys] = useKeyboardControls();
 
-  const { intersections } = useMemo(() => {
-    return getGridPointsAndLines(pattern);
-  }, [pattern]);
+  const { intersections } = useMemo(() => getGridPointsAndLines(pattern), [pattern]);
 
   useEffect(() => {
     const unsubscribeUp = subscribeKeys(
@@ -116,7 +112,7 @@ export const Loop = () => {
   }, [worldTile]);
 
   useFrame(({ mouse }, delta) => {
-    if (worldTile.shrine || players["p1"]?.dead) {
+    if (worldTile.shrine || players.p1?.dead) {
       return;
     }
 
@@ -156,7 +152,7 @@ export const Loop = () => {
       setPlayedRhythm([...playedRhythm, 1]);
     }
 
-    const playerBody = players["p1"].body?.current;
+    const playerBody = players.p1.body?.current;
     const playerTranslation = playerBody?.translation();
 
     const playerPosition = reuseableVector3a.set(
@@ -201,7 +197,7 @@ export const Loop = () => {
         if (distance < snapToRadius) {
           const impulse = { x: 0, y: 0, z: 0 };
 
-          let movement = getMovement(
+          const movement = getMovement(
             playerPosition,
             mousePosition,
             playerSpeed,
@@ -229,7 +225,7 @@ export const Loop = () => {
         }
       }
     });
-  });
+  }); 
 
   return (
     <>
@@ -239,16 +235,14 @@ export const Loop = () => {
       </mesh>
 
       {/* patterns */}
-      {Object.values(pattern.notes).map((note, i) => {
-        return (
+      {Object.values(pattern.notes).map((note, i) => (
           <NoteComponent
             played={playedPattern?.includes(note.id)}
             color={worldTile.color}
             note={note}
             key={`note-${note.id}-${i}`}
           />
-        );
-      })}
+        ))}
     </>
   );
 };
@@ -283,7 +277,7 @@ const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
     const patternsCopy = { ...patterns };
     patternsCopy[worldTile.patternId].notes[note.id] = {
       ...note,
-      body: body,
+      body,
     };
 
     setPatterns(patternsCopy);
@@ -353,7 +347,7 @@ const NoteComponent = ({ note, color, played }: NoteComponentProps) => {
       <RigidBody
         ref={body}
         position={note.position}
-        type={"fixed"}
+        type="fixed"
         userData={note}
         restitution={2}
         lockRotations

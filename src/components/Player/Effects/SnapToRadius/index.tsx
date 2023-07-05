@@ -12,7 +12,7 @@ export const SnapRadius = () => {
   return (
     <mesh position-z={-0.6}>
       <circleGeometry args={[snapToRadius]} />
-      <meshStandardMaterial color={"#fff"} transparent opacity={0.3} />
+      <meshStandardMaterial color="#fff" transparent opacity={0.3} />
     </mesh>
   );
 };

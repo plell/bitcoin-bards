@@ -1,7 +1,6 @@
-import { useEffect, useRef } from "react";
-
-import { Group, Mesh } from "three";
 import { useFrame } from "@react-three/fiber";
+import { useRef } from "react";
+import { Group } from "three";
 
 export const Cursor = () => {
   const ref = useRef<Group | null>(null);
