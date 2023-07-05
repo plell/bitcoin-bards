@@ -1,6 +1,20 @@
 import create from 'zustand'
 import { Players, Zone, WorldTile, NextWorldTile, Patterns } from './types'
-import {  initialEnemyState, initialZones, defaultTempo, generatedWorld } from './constants'
+import { initialEnemyState, initialZones, defaultTempo, generatedWorld } from './constants'
+
+const initialGameState = {
+    attack: false,
+    players: {},
+    enemies: initialEnemyState,
+    zones: initialZones,
+    world: generatedWorld.worldTiles,
+    patterns: generatedWorld.worldPatterns,
+    worldTile: generatedWorld.worldTiles.filter(f => !f.shrine)[Math.floor(Math.random() * generatedWorld.worldTiles.filter(f => !f.shrine).length)],
+    discoveredWorldTiles: [],
+    nextWorldTile: null,
+    tempo: defaultTempo,
+    snapTo: false,
+}
 
 type GameState = {
     tempo: number
@@ -27,20 +41,11 @@ type GameState = {
     setTempoUp: () => void,
     setTempoDown: () => void,
     setSnapTo: (snapTo:boolean) => void,
+    restartGame: (gameState:GameState) => void,
 }
 
 export default create<GameState>((set, get) => ({
-    attack: false,
-    players: {},
-    enemies: initialEnemyState,
-    zones: initialZones,
-    world: generatedWorld.worldTiles,
-    patterns: generatedWorld.worldPatterns,
-    worldTile: generatedWorld.worldTiles.filter(f=>!f.shrine)[Math.floor(Math.random()*generatedWorld.worldTiles.filter(f=>!f.shrine).length)],
-    discoveredWorldTiles: [],
-    nextWorldTile: null,
-    tempo: defaultTempo,
-    snapTo:false,
+    ...initialGameState,
     setTempoUp: () => {
         const tempo = get().tempo + 2
 
@@ -68,4 +73,5 @@ export default create<GameState>((set, get) => ({
     setWorldTile: (worldTile) => set({ worldTile }),
     setNextWorldTile: (nextWorldTile) => set({ nextWorldTile }),
     setDiscoveredWorldTiles: (discoveredWorldTiles) => set({ discoveredWorldTiles }),
+    restartGame: () => set({ ...initialGameState }),
 }))

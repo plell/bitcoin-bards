@@ -39,6 +39,8 @@ const cameraPosition = new Vector3(0, 0, 30);
 function App() {
   const enemies = useGame((s) => s.enemies);
   const players = useGame((s) => s.players);
+  const restartGame = useGame((s) => s.restartGame);
+
   const setEnemies = useGame((s) => s.setEnemies);
   const setAttack = useGame((s) => s.setAttack);
   const setNextWorldTile = useGame((s) => s.setNextWorldTile);
@@ -166,10 +168,6 @@ function App() {
   const ouch = useOuch(players["p1"]?.health);
 
   const p1IsDead = players["p1"]?.dead;
-
-  const restartGame = () => {
-    console.log("restartGame");
-  };
 
   return (
     <>

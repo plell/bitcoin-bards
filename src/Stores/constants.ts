@@ -115,14 +115,14 @@ export const generatedWorld = generateWorld()
 
 export const MOVEMENT_DAMPING = 5
 
-export const getMovement = (from: Vector3, to: Vector3, speed = 1, tempo = 40) => {
+export const getMovement = (from: Vector3, to: Vector3, speed = 1, tempo: number | boolean = 40) => {
   let amp = 30
 
-  const ratio = tempo / defaultTempo
+  const ratio = typeof tempo === 'number' ? (tempo / defaultTempo) : 1
 
   let movement = to.sub(from).normalize()
 
-  movement.x *= ratio*speed*amp
+  movement.x *= ratio * speed * amp
   movement.y *= ratio * speed * amp
   
 

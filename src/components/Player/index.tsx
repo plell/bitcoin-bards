@@ -22,11 +22,7 @@ import useGame from "../../Stores/useGame";
 import { RigidBodyData } from "../../Stores/types";
 import { dieSound } from "../Sounds/Tone";
 import { SnapRadius } from "./Effects/SnapToRadius";
-import {
-  DepthOfField,
-  EffectComposer,
-  Pixelation,
-} from "@react-three/postprocessing";
+
 import { useOuch } from "../hooks/useOuch";
 
 export const playerSpeed = 0.2;
@@ -172,7 +168,7 @@ export const Player = () => {
         currentPosition,
         mousePosition,
         playerSpeed,
-        tempo
+        false
       );
 
       impulse.x = movement.x;

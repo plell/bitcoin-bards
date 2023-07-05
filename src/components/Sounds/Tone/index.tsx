@@ -40,7 +40,7 @@ const effectsBus = new Tone.Volume(0);
 
 effectsBus.chain(highPassFilter, Tone.Destination);
 
-const reverb = new Tone.Reverb(3).connect(effectsBus);
+const reverb = new Tone.Reverb(0).connect(effectsBus);
 
 const polySynth0 = new Tone.PolySynth().connect(reverb);
 polySynth0.chain(highPassFilter, Tone.Destination);
@@ -94,7 +94,7 @@ const synths = [
   polySynth5,
 ];
 
-const mute = true;
+const mute = false;
 
 export const playSound = async (note = "A3") => {
   if (mute) {
