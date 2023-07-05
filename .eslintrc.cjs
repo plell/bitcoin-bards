@@ -40,7 +40,7 @@ module.exports = {
         accessibility: 'no-public',
       },
     ],
-    '@typescript-eslint/ban-types':'off',
+
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
@@ -81,7 +81,8 @@ module.exports = {
     ],
     'no-unexpected-multiline': 'off',
     'no-unused-expressions': 'off',
-    'no-nested-ternary':'off',
+    'no-nested-ternary': 'off',
+    'func-names': 'off',
     'no-use-before-define': 'off',
     'no-useless-constructor': 'off',
     'padding-line-between-statements': [

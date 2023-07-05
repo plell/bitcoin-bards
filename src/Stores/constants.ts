@@ -301,9 +301,9 @@ export const initialZones = [
       },
 ]
 
-export const debounce = (fn: Function, ms = 300) => {
+export const debounce = (fn: () => void, ms = 300) => {
   let timeoutId: ReturnType<typeof setTimeout>;
-  return function (this: any, ...args: any[]) {
+  return function (this: any, ...args: []) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
@@ -313,7 +313,7 @@ export const defaultTempo = 40
 
 const bufferTimeouts: Record<string, ReturnType<typeof setTimeout>> = {}
 
-export const postDebounce = (key:string, fn: Function, ms = 300) => {
+export const postDebounce = (key:string, fn: () => void, ms = 300) => {
   if (!bufferTimeouts[key]) {
     fn()
     bufferTimeouts[key] = setTimeout(() => {

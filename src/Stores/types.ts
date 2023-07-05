@@ -1,5 +1,5 @@
-import { Group, Vector, Vector3 } from "three"
 import { RapierRigidBody } from "@react-three/rapier"
+import { Group, Vector3 } from "three"
 
 export type PlayerPosition = Vector3
 
