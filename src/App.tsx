@@ -14,7 +14,6 @@ import { Interval, Patterns } from "./Stores/types";
 import { v4 as uuidv4 } from "uuid";
 import { LevelManager } from "./components/LevelManager";
 import styled from "styled-components";
-import mqtt from "mqtt/dist/mqtt";
 import { Fort } from "@mui/icons-material";
 import { Vector3 } from "three";
 import { Perf } from "r3f-perf";
@@ -53,24 +52,6 @@ function App() {
   const setWorldTile = useGame((s) => s.setWorldTile);
   const setWorld = useGame((s) => s.setWorld);
   const [tick, setTick] = useState(false);
-
-  // mqtt stuff start
-  const [connectionStatus, setConnectionStatus] = useState(false);
-  const [messages, setMessages] = useState([]);
-
-  useEffect(() => {
-    try {
-      console.log("mqtt", mqtt);
-      let client: mqtt.MqttClient = mqtt.connect("mqtt://test.mosquitto.org");
-      client.on("connect", () => setConnectionStatus(true));
-      client.on("message", (topic, payload, packet) => {
-        setMessages(messages.concat(payload.toString()));
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
-  // mqtt stuff end
 
   useEffect(() => {
     if (enemyGeneratorTimeout) {
@@ -207,7 +188,7 @@ function App() {
           <color attach='background' args={[worldTile.color || "#fff"]} />
 
           {/* <OrbitControls /> */}
-          <Perf position='bottom-right' />
+          {/* <Perf position='bottom-right' /> */}
           <Lights />
 
           <LevelManager />
